@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+@theme { --color-primary: #2563eb; --color-success: #16a34a; --color-warning: #d97706; --color-danger: #dc2626; --font-sans: ui-sans-serif, system-ui, sans-serif; }
+@custom-variant dark (&:is(.dark *));
+@layer base { * { @apply border-slate-200 dark:border-slate-800; } body { @apply bg-slate-50 text-slate-950 antialiased dark:bg-slate-950 dark:text-slate-50; } button, a, input, select, textarea { @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950; } }
