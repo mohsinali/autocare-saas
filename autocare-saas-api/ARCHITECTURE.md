@@ -50,9 +50,57 @@ prisma/schema.prisma database schema
 - API contracts are documented with Swagger and versioned under `/api/v1`.
 - Optimize for evolvability: modules can gain policies, RBAC guards, events, and integrations without rewriting adjacent capabilities.
 
+## Domain Model
+
+The application follows the following core domain model.
+
+Tenant
+    │
+    ├── Users
+    │
+    └── Customers
+            │
+            └── Vehicles
+                    │
+                    ├── Appointments
+                    │
+                    └── Service History
+
+### Customer
+
+A customer can own multiple vehicles.
+
+Customers are people or businesses.
+
+Customer information should never be duplicated in vehicle records.
+
+### Vehicle
+
+A vehicle belongs to exactly one customer.
+
+A vehicle maintains its own service history, appointment history and future reminder schedule.
+
+Vehicle data should never be duplicated inside Service History or Appointment records.
+
+Service History and Appointments must reference vehicle_id.
+
+### Service History
+
+Represents completed work performed on a vehicle.
+
+### Appointment
+
+Represents future scheduled work for a vehicle.
+
+### Reminder Engine
+
+Maintenance reminders are evaluated using each vehicle's service history and maintenance schedule. Once a vehicle is due for service, the reminder is delivered to the vehicle's current owner (customer) through the configured notification channels.
+
+
+
 ## Future roadmap
 
-1. Vehicle management and appointment scheduling with conflict detection.
+1. Appointment scheduling with conflict detection.
 2. RBAC permissions, invitations, refresh-token rotation, password reset, and audit logs.
 3. Subscription billing, tenant plans, metering, and webhook processing.
 4. Notifications, dashboards, reporting read models, and background jobs.
