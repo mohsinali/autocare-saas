@@ -5,5 +5,5 @@ import { AuthenticatedUser } from '../auth/auth.types'; import { CurrentUser } f
 export class ServiceHistoryController {
   constructor(private readonly history: ServiceHistoryService) {}
   @Post() @ApiOperation({ summary: 'Record a completed service' }) create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateServiceHistoryDto) { return this.history.create(user.tenantId, dto); }
-  @Get('customer/:customerId') @ApiOperation({ summary: 'List service history for a customer' }) list(@CurrentUser() user: AuthenticatedUser, @Param('customerId') customerId: string) { return this.history.listForCustomer(user.tenantId, customerId); }
+  @Get('vehicle/:vehicleId') @ApiOperation({ summary: 'List service history for a vehicle' }) list(@CurrentUser() user: AuthenticatedUser, @Param('vehicleId') vehicleId: string) { return this.history.listForVehicle(user.tenantId, vehicleId); }
 }

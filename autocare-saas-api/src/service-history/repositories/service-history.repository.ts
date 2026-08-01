@@ -5,5 +5,5 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class ServiceHistoryRepository {
   constructor(private readonly prisma: PrismaService) {}
   create(data: Prisma.ServiceHistoryUncheckedCreateInput): Promise<ServiceHistory> { return this.prisma.serviceHistory.create({ data }); }
-  listByCustomer(tenantId: string, customerId: string): Promise<ServiceHistory[]> { return this.prisma.serviceHistory.findMany({ where: { tenantId, customerId }, orderBy: { serviceDate: 'desc' } }); }
+  listByVehicle(tenantId: string, vehicleId: string): Promise<ServiceHistory[]> { return this.prisma.serviceHistory.findMany({ where: { tenantId, vehicleId }, orderBy: { serviceDate: 'desc' } }); }
 }
