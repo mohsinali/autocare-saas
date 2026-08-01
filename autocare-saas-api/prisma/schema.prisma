@@ -39,6 +39,7 @@ model Tenant {
   id        String     @id @default(uuid()) @db.Uuid
   name      String
   slug      String     @unique
+  timezone  String     @default("UTC")
   users     User[]
   customers Customer[]
   vehicles  Vehicle[]

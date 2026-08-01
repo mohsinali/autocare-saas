@@ -98,6 +98,16 @@ Maintenance reminders are evaluated using each vehicle's service history and mai
 
 
 
+## Timezone Strategy
+
+- Store all timestamps in UTC.
+- Store one timezone per Tenant.
+- Convert to UTC before persisting.
+- Convert back to the Tenant timezone when returning responses.
+- Always use IANA timezone identifiers.
+
+`TimezoneService` is the shared conversion boundary. Appointment use cases will receive a tenant-local date/time, load the tenant timezone, convert it to UTC through this service before persistence, and convert the stored UTC instant back to a local value in their response mapping.
+
 ## Future roadmap
 
 1. Appointment scheduling with conflict detection.

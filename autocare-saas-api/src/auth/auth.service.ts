@@ -13,7 +13,7 @@ export class AuthService {
     const existing = await this.prisma.tenant.findUnique({ where: { slug: dto.tenantSlug } });
     if (existing) throw new ConflictException('Tenant slug is already in use');
     const passwordHash = await bcrypt.hash(dto.password, 12);
-    const user = await this.prisma.user.create({ data: { email: dto.email.toLowerCase(), passwordHash, firstName: dto.firstName, lastName: dto.lastName, tenant: { create: { name: dto.tenantName, slug: dto.tenantSlug } } } });
+    const user = await this.prisma.user.create({ data: { email: dto.email.toLowerCase(), passwordHash, firstName: dto.firstName, lastName: dto.lastName, tenant: { create: { name: dto.tenantName, slug: dto.tenantSlug, timezone: dto.timezone ?? 'UTC' } } } });
     return this.createSession(user);
   }
   async login(dto: LoginDto): Promise<{ accessToken: string; user: AuthenticatedUser }> {
