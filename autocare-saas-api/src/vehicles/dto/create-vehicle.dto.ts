@@ -5,18 +5,18 @@ import { IsDateString, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, 
 
 export class CreateVehicleDto {
   @ApiProperty() @IsUUID() customerId!: string;
-  @ApiProperty() @IsString() @IsNotEmpty() @MaxLength(40) registrationNumber!: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(40) registrationNumber?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(50) nickname?: string;
   @ApiPropertyOptional({ minLength: 17, maxLength: 17 }) @IsOptional() @IsString() @Length(17, 17) vin?: string;
-  @ApiProperty() @IsString() @IsNotEmpty() @MaxLength(80) make!: string;
-  @ApiProperty() @IsString() @IsNotEmpty() @MaxLength(80) model!: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() @IsNotEmpty() @MaxLength(80) make?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() @IsNotEmpty() @MaxLength(80) model?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(80) variant?: string;
-  @ApiProperty({ minimum: 1886 }) @Type(() => Number) @IsInt() @Min(1886) @Max(new Date().getFullYear() + 1) year!: number;
+  @ApiPropertyOptional({ minimum: 1886 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1886) @Max(new Date().getFullYear() + 1) year?: number;
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(40) color?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(80) engineNumber?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(40) engineSize?: string;
-  @ApiProperty({ enum: FuelType }) @IsEnum(FuelType) fuelType!: FuelType;
-  @ApiProperty({ enum: Transmission }) @IsEnum(Transmission) transmission!: Transmission;
+  @ApiPropertyOptional({ enum: FuelType }) @IsOptional() @IsEnum(FuelType) fuelType?: FuelType;
+  @ApiPropertyOptional({ enum: Transmission }) @IsOptional() @IsEnum(Transmission) transmission?: Transmission;
   @ApiPropertyOptional() @IsOptional() @IsDateString() purchaseDate?: string;
   @ApiProperty({ minimum: 0 }) @Type(() => Number) @IsInt() @Min(0) currentMileage!: number;
   @ApiPropertyOptional({ minimum: 0 }) @IsOptional() @Type(() => Number) @IsInt() @Min(0) lastServiceMileage?: number;

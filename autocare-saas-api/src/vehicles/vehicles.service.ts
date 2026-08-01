@@ -13,7 +13,7 @@ export class VehiclesService {
   async create(tenantId: string, dto: CreateVehicleDto) {
     await this.customers.findOne(tenantId, dto.customerId);
     try {
-      return await this.repository.createWithNextCode({ ...dto, tenantId, registrationNumber: this.normalizeRegistration(dto.registrationNumber), vin: this.normalizeVin(dto.vin), purchaseDate: dto.purchaseDate ? new Date(dto.purchaseDate) : undefined });
+      return await this.repository.createWithNextCode({ ...dto, tenantId, ...(dto.registrationNumber ? { registrationNumber: this.normalizeRegistration(dto.registrationNumber) } : {}), vin: this.normalizeVin(dto.vin), purchaseDate: dto.purchaseDate ? new Date(dto.purchaseDate) : undefined });
     } catch (error) { this.rethrowUniqueRegistration(error); }
   }
 

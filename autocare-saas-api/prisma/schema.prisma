@@ -95,17 +95,17 @@ model Vehicle {
   customerId         String          @db.Uuid
   vehicleCode        String
   nickname           String?
-  registrationNumber String
+  registrationNumber String?
   vin                String?
-  make               String
-  model              String
+  make               String?
+  model              String?
   variant            String?
-  year               Int
+  year               Int?
   color              String?
   engineNumber       String?
   engineSize         String?
-  fuelType           FuelType
-  transmission       Transmission
+  fuelType           FuelType?
+  transmission       Transmission?
   purchaseDate       DateTime?
   currentMileage     Int
   lastServiceMileage Int?
