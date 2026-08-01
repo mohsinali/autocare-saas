@@ -34,6 +34,7 @@ AutoCare Services is a dependable multi-tenant SaaS platform for automotive work
 ```
 src/
   auth/             authentication, JWT strategy, DTOs
+  branches/         workshop-location use cases and persistence adapter
   customers/        customer use cases and persistence adapter
   service-history/  completed-service use cases and persistence adapter
   common/           cross-cutting decorators and exception handling
@@ -58,6 +59,12 @@ Tenant
     │
     ├── Users
     │
+    ├── Branches
+    │       │
+    │       ├── Appointments
+    │       │
+    │       └── Service History
+    │
     └── Customers
             │
             └── Vehicles
@@ -74,6 +81,12 @@ Customers are people or businesses.
 
 Customer information should never be duplicated in vehicle records.
 
+Customers belong to a Tenant, not a Branch. This keeps a customer and their vehicles available across every workshop location of the same business without duplicate customer records or cross-branch transfers.
+
+### Branch
+
+A branch is a physical workshop location belonging to exactly one Tenant. It owns its contact details, address, IANA timezone, business opening and closing times, and active lifecycle state. Branch deletion is soft so operational history remains auditable.
+
 ### Vehicle
 
 A vehicle belongs to exactly one customer.
@@ -82,15 +95,15 @@ A vehicle maintains its own service history, appointment history and future remi
 
 Vehicle data should never be duplicated inside Service History or Appointment records.
 
-Service History and Appointments must reference vehicle_id.
+Service History and Appointments must reference a vehicle and the Branch where the work occurs. This lets a customer be served at any branch while preserving location-specific operational history.
 
 ### Service History
 
-Represents completed work performed on a vehicle.
+Represents completed work performed on a vehicle at a Branch.
 
 ### Appointment
 
-Represents future scheduled work for a vehicle.
+Represents future scheduled work for a vehicle at a Branch.
 
 ### Reminder Engine
 
@@ -101,12 +114,12 @@ Maintenance reminders are evaluated using each vehicle's service history and mai
 ## Timezone Strategy
 
 - Store all timestamps in UTC.
-- Store one timezone per Tenant.
+- Store one IANA timezone per Branch; Tenant does not own a timezone.
 - Convert to UTC before persisting.
-- Convert back to the Tenant timezone when returning responses.
+- Convert back to the Branch timezone when returning responses.
 - Always use IANA timezone identifiers.
 
-`TimezoneService` is the shared conversion boundary. Appointment use cases will receive a tenant-local date/time, load the tenant timezone, convert it to UTC through this service before persistence, and convert the stored UTC instant back to a local value in their response mapping.
+`TimezoneService` is the shared conversion boundary. Appointment use cases receive a branch-local date/time, load the branch timezone, convert it to UTC through this service before persistence, and convert the stored UTC instant back to a local value in their response mapping.
 
 ## Future roadmap
 
