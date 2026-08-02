@@ -35,6 +35,16 @@ enum VehicleStatus {
   SCRAPPED
 }
 
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  CHECKED_IN
+  IN_SERVICE
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
 model Tenant {
   id              String           @id @default(uuid()) @db.Uuid
   name            String
@@ -44,9 +54,10 @@ model Tenant {
   customers       Customer[]
   vehicles        Vehicle[]
   services        ServiceHistory[]
+  appointments    Appointment[]
   vehicleSequence VehicleSequence?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
 
 model Branch {
@@ -67,13 +78,14 @@ model Branch {
   isActive            Boolean          @default(true)
   tenant              Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   services            ServiceHistory[]
+  appointments        Appointment[]
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
   deletedAt           DateTime?
 
+  @@unique([id, tenantId])
   @@index([tenantId, deletedAt])
   @@index([tenantId, name])
-  @@unique([id, tenantId])
 }
 
 model User {
@@ -94,21 +106,22 @@ model User {
 }
 
 model Customer {
-  id        String           @id @default(uuid()) @db.Uuid
-  tenantId  String           @db.Uuid
-  firstName String
-  lastName  String
-  email     String?
-  phone     String
-  notes     String?
-  tenant    Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  vehicles  Vehicle[]
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  id           String        @id @default(uuid()) @db.Uuid
+  tenantId     String        @db.Uuid
+  firstName    String
+  lastName     String
+  email        String?
+  phone        String
+  notes        String?
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicles     Vehicle[]
+  appointments Appointment[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
+  @@unique([tenantId, email])
   @@index([tenantId, lastName, firstName])
   @@index([tenantId, phone])
-  @@unique([tenantId, email])
 }
 
 model VehicleSequence {
@@ -118,9 +131,9 @@ model VehicleSequence {
 }
 
 model Vehicle {
-  id                 String          @id @default(uuid()) @db.Uuid
-  tenantId           String          @db.Uuid
-  customerId         String          @db.Uuid
+  id                 String           @id @default(uuid()) @db.Uuid
+  tenantId           String           @db.Uuid
+  customerId         String           @db.Uuid
   vehicleCode        String
   nickname           String?
   registrationNumber String?
@@ -137,13 +150,14 @@ model Vehicle {
   purchaseDate       DateTime?
   currentMileage     Int
   lastServiceMileage Int?
-  status             VehicleStatus   @default(ACTIVE)
+  status             VehicleStatus    @default(ACTIVE)
   notes              String?
-  tenant             Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  customer           Customer        @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  tenant             Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer           Customer         @relation(fields: [customerId], references: [id], onDelete: Restrict)
   services           ServiceHistory[]
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
+  appointments       Appointment[]
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
   deletedAt          DateTime?
 
   @@unique([tenantId, vehicleCode])
@@ -154,20 +168,48 @@ model Vehicle {
 }
 
 model ServiceHistory {
-  id          String   @id @default(uuid()) @db.Uuid
-  tenantId    String   @db.Uuid
-  branchId    String   @db.Uuid
-  vehicleId   String   @db.Uuid
-  serviceDate DateTime
-  description String
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @db.Uuid
+  branchId       String   @db.Uuid
+  vehicleId      String   @db.Uuid
+  serviceDate    DateTime
+  description    String
   currentMileage Int?
-  totalAmount Decimal  @db.Decimal(12, 2)
-  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
-  branch      Branch   @relation(fields: [branchId], references: [id], onDelete: Restrict)
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  totalAmount    Decimal  @db.Decimal(12, 2)
+  vehicle        Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  branch         Branch   @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@index([tenantId, vehicleId, serviceDate])
   @@index([tenantId, branchId, serviceDate])
+}
+
+model Appointment {
+  id                       String            @id @default(uuid()) @db.Uuid
+  tenantId                 String            @db.Uuid
+  branchId                 String            @db.Uuid
+  customerId               String            @db.Uuid
+  vehicleId                String            @db.Uuid
+  appointmentDateTimeUtc   DateTime
+  estimatedDurationMinutes Int
+  serviceRequested         String
+  status                   AppointmentStatus @default(SCHEDULED)
+  notes                    String?
+  createdBy                String            @db.Uuid
+  tenant                   Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch                   Branch            @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  customer                 Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  vehicle                  Vehicle           @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
+  deletedAt                DateTime?
+
+  @@unique([id, tenantId])
+  @@index([tenantId, deletedAt, appointmentDateTimeUtc])
+  @@index([tenantId, branchId, appointmentDateTimeUtc])
+  @@index([tenantId, customerId, appointmentDateTimeUtc])
+  @@index([tenantId, vehicleId, appointmentDateTimeUtc])
+  @@index([tenantId, status, appointmentDateTimeUtc])
 }
