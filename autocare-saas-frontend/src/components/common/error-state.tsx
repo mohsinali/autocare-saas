@@ -1,0 +1,3 @@
+import { AlertCircle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+export function ErrorState({ title = 'Something went wrong', description = 'Please try again.', onRetry }: { title?: string; description?: string; onRetry?: () => void }): React.JSX.Element { return <div className="flex min-h-52 flex-col items-center justify-center rounded-xl border border-dashed p-8 text-center"><AlertCircle className="mb-3 size-8 text-red-500" /><h3 className="font-semibold">{title}</h3><p className="mt-1 max-w-sm text-sm text-slate-500">{description}</p>{onRetry && <Button variant="outline" className="mt-4" onClick={onRetry}><RefreshCw className="size-4" />Try again</Button>}</div>; }

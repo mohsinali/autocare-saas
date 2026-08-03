@@ -32,6 +32,30 @@ Use Tailwind utility classes and shared design tokens; do not use inline styles.
 
 Server data is cached with deliberate query keys and a sensible stale time. Pages only fetch their feature’s data. Use dynamic imports for future large charts/editors, stable callback props where profiling demonstrates a need, and Next image/font optimization for asset-heavy modules.
 
+## Workspace Pattern
+
+The application is organized around business workspaces rather than isolated CRUD modules.
+
+Primary workspace:
+
+Customer Workspace
+
+Customer
+    ├── Profile
+    ├── Vehicles
+    ├── Appointments
+    └── Service History
+
+Future workspaces may include:
+
+Branch Workspace
+Technician Workspace
+Administration Workspace
+
+A workspace owns the navigation flow for related business entities while backend modules remain independent.
+
+Pages should guide users through business workflows instead of exposing unrelated CRUD screens.
+
 ## Future modules
 
 Vehicles, appointments, invoices/billing, reports, notifications, tenant settings/RBAC, audit history, and AI voice-agent workflows should each be introduced as an independent feature with typed API services, query keys, forms, and route composition. Avoid cross-feature imports except through explicitly shared components or services.
