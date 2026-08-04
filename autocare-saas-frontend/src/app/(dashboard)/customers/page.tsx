@@ -1,3 +1,73 @@
-'use client';
-import { Plus, Search } from 'lucide-react'; import { useState } from 'react'; import { PageHeader } from '@/components/common/page-header'; import { Card, CardContent } from '@/components/ui/card'; import { Button } from '@/components/ui/button'; import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'; import { Input } from '@/components/ui/input'; import { CustomerForm } from '@/features/customers/customer-form'; import { CustomerTable } from '@/features/customers/customer-table'; import { useCustomers } from '@/features/customers/customer-hooks';
-export default function CustomersPage(): React.JSX.Element { const [search, setSearch] = useState(''); const [page, setPage] = useState(1); const [open, setOpen] = useState(false); const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc'); const query = useCustomers({ page, limit: 10, search: search || undefined }); return <div className="space-y-6"><PageHeader title="Customers" description="Manage everyone who trusts you with their vehicle." action={<Dialog open={open} onOpenChange={setOpen}><DialogTrigger asChild><Button><Plus className="size-4" />Add customer</Button></DialogTrigger><DialogContent><h2 className="mb-5 text-lg font-semibold">Add customer</h2><CustomerForm onSuccess={() => setOpen(false)} /></DialogContent></Dialog>} /><Card><CardContent className="p-4"><div className="relative mb-4 max-w-sm"><Search className="absolute left-3 top-3 size-4 text-slate-400" /><Input value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} className="pl-9" placeholder="Search customers" aria-label="Search customers" /></div><CustomerTable data={query.data} isLoading={query.isLoading} isError={query.isError} page={page} sortDirection={sortDirection} onPageChange={setPage} onRefresh={() => { void query.refetch(); }} onToggleSort={() => setSortDirection((direction) => direction === 'asc' ? 'desc' : 'asc')} /></CardContent></Card></div>; }
+"use client";
+import { Plus, Search } from "lucide-react";
+import { useState } from "react";
+import { PageHeader } from "@/components/common/page-header";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { CustomerForm } from "@/features/customers/customer-form";
+import { CustomerTable } from "@/features/customers/customer-table";
+import { useCustomers } from "@/features/customers/customer-hooks";
+export default function CustomersPage(): React.JSX.Element {
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [open, setOpen] = useState(false);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const query = useCustomers({ page, limit: 10, search: search || undefined });
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Customers"
+        description="Manage everyone who trusts you with their vehicle."
+        action={
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="size-4" />
+                Add customer
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <h2 className="mb-5 text-lg font-semibold">Add customer</h2>
+              <CustomerForm onSuccess={() => setOpen(false)} />
+            </DialogContent>
+          </Dialog>
+        }
+      />
+      <Card>
+        <CardContent className="p-4">
+          <div className="relative mb-4 max-w-sm">
+            <Search className="absolute left-3 top-3 size-4 text-slate-400" />
+            <Input
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPage(1);
+              }}
+              className="pl-9"
+              placeholder="Search customers"
+              aria-label="Search customers"
+            />
+          </div>
+          <CustomerTable
+            data={query.data}
+            isLoading={query.isLoading}
+            isError={query.isError}
+            page={page}
+            sortDirection={sortDirection}
+            onPageChange={setPage}
+            onRefresh={() => {
+              void query.refetch();
+            }}
+            onToggleSort={() =>
+              setSortDirection((direction) =>
+                direction === "asc" ? "desc" : "asc",
+              )
+            }
+          />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

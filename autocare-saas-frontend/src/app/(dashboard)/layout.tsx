@@ -1,3 +1,34 @@
-'use client';
-import { useEffect } from 'react'; import { useRouter } from 'next/navigation'; import { Sidebar } from '@/components/layout/sidebar'; import { Topbar } from '@/components/layout/topbar'; import { useAuth } from '@/features/auth/use-auth';
-export default function DashboardLayout({ children }: { children: React.ReactNode }): React.JSX.Element { const { session, ready, logout } = useAuth(); const router = useRouter(); useEffect(() => { if (ready && !session) router.replace('/login'); }, [ready, router, session]); if (!ready || !session) return <div className="grid min-h-screen place-items-center text-sm text-slate-500">Loading workspace…</div>; return <div className="flex min-h-screen"><div className="hidden md:block"><Sidebar onLogout={logout} /></div><div className="min-w-0 flex-1"><Topbar email={session.user.email} /><main className="mx-auto max-w-7xl p-5 md:p-8">{children}</main></div></div>; }
+"use client";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Sidebar } from "@/components/layout/sidebar";
+import { Topbar } from "@/components/layout/topbar";
+import { useAuth } from "@/features/auth/use-auth";
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}): React.JSX.Element {
+  const { session, ready, logout } = useAuth();
+  const router = useRouter();
+  useEffect(() => {
+    if (ready && !session) router.replace("/login");
+  }, [ready, router, session]);
+  if (!ready || !session)
+    return (
+      <div className="grid min-h-screen place-items-center text-sm text-slate-500">
+        Loading workspace…
+      </div>
+    );
+  return (
+    <div className="flex min-h-screen">
+      <div className="hidden md:block">
+        <Sidebar onLogout={logout} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <Topbar email={session.user.email} />
+        <main className="mx-auto max-w-7xl p-5 md:p-8">{children}</main>
+      </div>
+    </div>
+  );
+}

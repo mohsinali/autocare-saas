@@ -1,5 +1,140 @@
-'use client';
-import { zodResolver } from '@hookform/resolvers/zod'; import { useMutation } from '@tanstack/react-query'; import { CarFront, Loader2 } from 'lucide-react'; import { useRouter } from 'next/navigation'; import { useForm } from 'react-hook-form'; import { toast } from 'sonner'; import { z } from 'zod'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { authService } from '@/services/auth/auth.service'; import { sessionStore } from '@/services/auth/session';
-const schema = z.object({ tenantSlug: z.string().min(2, 'Enter your workspace slug'), email: z.string().email('Enter a valid email address'), password: z.string().min(1, 'Enter your password') }); type FormValues = z.infer<typeof schema>;
-export default function LoginPage(): React.JSX.Element { const router = useRouter(); const form = useForm<FormValues>({ resolver: zodResolver(schema), defaultValues: { tenantSlug: '', email: '', password: '' } }); const mutation = useMutation({ mutationFn: authService.login, onSuccess: (session) => { sessionStore.set(session); router.replace('/dashboard'); }, onError: () => toast.error('Unable to sign in', { description: 'Check your workspace and credentials, then try again.' }) }); return <main className="grid min-h-screen lg:grid-cols-2"><section className="hidden bg-blue-600 p-12 text-white lg:flex lg:flex-col"><div className="flex items-center gap-3 text-xl font-bold"><span className="grid size-10 place-items-center rounded-xl bg-white/15"><CarFront /></span>AutoCare Services</div><div className="my-auto max-w-md"><p className="text-sm font-medium uppercase tracking-[0.18em] text-blue-200">Service operations, unified</p><h1 className="mt-4 text-5xl font-semibold leading-tight">Everything your workshop needs to move forward.</h1><p className="mt-6 text-lg leading-8 text-blue-100">Bring your customer relationships and service history into one focused, secure workspace.</p></div><p className="text-sm text-blue-200">© {new Date().getFullYear()} AutoCare Services</p></section><section className="flex items-center justify-center p-6"><div className="w-full max-w-sm"><div className="mb-10 lg:hidden"><div className="flex items-center gap-2 text-xl font-bold"><CarFront className="text-blue-600" />AutoCare</div></div><h2 className="text-2xl font-semibold">Welcome back</h2><p className="mt-2 text-sm text-slate-500">Sign in to your service workspace.</p><form onSubmit={form.handleSubmit((values) => mutation.mutate(values))} className="mt-8 space-y-5"><Field label="Workspace slug" error={form.formState.errors.tenantSlug?.message}><Input autoComplete="organization" placeholder="northside-garage" {...form.register('tenantSlug')} /></Field><Field label="Email address" error={form.formState.errors.email?.message}><Input type="email" autoComplete="email" placeholder="you@company.com" {...form.register('email')} /></Field><Field label="Password" error={form.formState.errors.password?.message}><Input type="password" autoComplete="current-password" {...form.register('password')} /></Field><Button className="w-full" type="submit" disabled={mutation.isPending}>{mutation.isPending && <Loader2 className="size-4 animate-spin" />}Sign in</Button></form></div></section></main>; }
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }): React.JSX.Element { return <label className="block space-y-2"><span className="text-sm font-medium">{label}</span>{children}{error && <span className="text-xs text-red-600">{error}</span>}</label>; }
+"use client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { CarFront, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { authService } from "@/services/auth/auth.service";
+import { sessionStore } from "@/services/auth/session";
+const schema = z.object({
+  tenantSlug: z.string().min(2, "Enter your workspace slug"),
+  email: z.string().email("Enter a valid email address"),
+  password: z.string().min(1, "Enter your password"),
+});
+type FormValues = z.infer<typeof schema>;
+export default function LoginPage(): React.JSX.Element {
+  const router = useRouter();
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { tenantSlug: "", email: "", password: "" },
+  });
+  const mutation = useMutation({
+    mutationFn: authService.login,
+    onSuccess: (session) => {
+      sessionStore.set(session);
+      router.replace("/dashboard");
+    },
+    onError: () =>
+      toast.error("Unable to sign in", {
+        description: "Check your workspace and credentials, then try again.",
+      }),
+  });
+  return (
+    <main className="grid min-h-screen lg:grid-cols-2">
+      <section className="hidden bg-blue-600 p-12 text-white lg:flex lg:flex-col">
+        <div className="flex items-center gap-3 text-xl font-bold">
+          <span className="grid size-10 place-items-center rounded-xl bg-white/15">
+            <CarFront />
+          </span>
+          AutoCare Services
+        </div>
+        <div className="my-auto max-w-md">
+          <p className="text-sm font-medium uppercase tracking-[0.18em] text-blue-200">
+            Service operations, unified
+          </p>
+          <h1 className="mt-4 text-5xl font-semibold leading-tight">
+            Everything your workshop needs to move forward.
+          </h1>
+          <p className="mt-6 text-lg leading-8 text-blue-100">
+            Bring your customer relationships and service history into one
+            focused, secure workspace.
+          </p>
+        </div>
+        <p className="text-sm text-blue-200">
+          © {new Date().getFullYear()} AutoCare Services
+        </p>
+      </section>
+      <section className="flex items-center justify-center p-6">
+        <div className="w-full max-w-sm">
+          <div className="mb-10 lg:hidden">
+            <div className="flex items-center gap-2 text-xl font-bold">
+              <CarFront className="text-blue-600" />
+              AutoCare
+            </div>
+          </div>
+          <h2 className="text-2xl font-semibold">Welcome back</h2>
+          <p className="mt-2 text-sm text-slate-500">
+            Sign in to your service workspace.
+          </p>
+          <form
+            onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
+            className="mt-8 space-y-5"
+          >
+            <Field
+              label="Workspace slug"
+              error={form.formState.errors.tenantSlug?.message}
+            >
+              <Input
+                autoComplete="organization"
+                placeholder="northside-garage"
+                {...form.register("tenantSlug")}
+              />
+            </Field>
+            <Field
+              label="Email address"
+              error={form.formState.errors.email?.message}
+            >
+              <Input
+                type="email"
+                autoComplete="email"
+                placeholder="you@company.com"
+                {...form.register("email")}
+              />
+            </Field>
+            <Field
+              label="Password"
+              error={form.formState.errors.password?.message}
+            >
+              <Input
+                type="password"
+                autoComplete="current-password"
+                {...form.register("password")}
+              />
+            </Field>
+            <Button
+              className="w-full"
+              type="submit"
+              disabled={mutation.isPending}
+            >
+              {mutation.isPending && (
+                <Loader2 className="size-4 animate-spin" />
+              )}
+              Sign in
+            </Button>
+          </form>
+        </div>
+      </section>
+    </main>
+  );
+}
+function Field({
+  label,
+  error,
+  children,
+}: {
+  label: string;
+  error?: string;
+  children: React.ReactNode;
+}): React.JSX.Element {
+  return (
+    <label className="block space-y-2">
+      <span className="text-sm font-medium">{label}</span>
+      {children}
+      {error && <span className="text-xs text-red-600">{error}</span>}
+    </label>
+  );
+}

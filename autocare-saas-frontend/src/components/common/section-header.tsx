@@ -1,1 +1,21 @@
-export function SectionHeader({ title, description, action }: { title: string; description?: string; action?: React.ReactNode }): React.JSX.Element { return <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="font-semibold">{title}</h3>{description && <p className="mt-1 text-sm text-slate-500">{description}</p>}</div>{action}</div>; }
+export function SectionHeader({
+  title,
+  description,
+  action,
+}: {
+  title: string;
+  description?: string;
+  action?: React.ReactNode;
+}): React.JSX.Element {
+  return (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h3 className="font-semibold">{title}</h3>
+        {description && (
+          <p className="mt-1 text-sm text-slate-500">{description}</p>
+        )}
+      </div>
+      {action}
+    </div>
+  );
+}

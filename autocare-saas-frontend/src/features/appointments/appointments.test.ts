@@ -1,0 +1,70 @@
+import { describe, expect, it } from "vitest";
+import { appointmentFormSchema } from "./appointment-schema";
+import {
+  branchDayUtcRange,
+  branchLocalToApi,
+  formatAppointmentDateTime,
+  safeBranchTimezone,
+  utcToBranchFormValues,
+} from "./appointment-date-utils";
+import { appointmentKeys } from "./appointment-query-keys";
+import { APPOINTMENT_STATUS } from "./appointment-status";
+
+describe("appointment form", () => {
+  it("rejects missing selections and invalid duration", () => {
+    const result = appointmentFormSchema.safeParse({
+      branchId: "",
+      customerId: "",
+      vehicleId: "",
+      date: "",
+      time: "",
+      estimatedDurationMinutes: 0,
+      serviceRequested: "",
+      notes: "",
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("branch timezone conversion", () => {
+  it("round-trips branch-local values without browser time", () => {
+    expect(branchLocalToApi("2026-11-02", "09:30", "America/New_York")).toBe(
+      "2026-11-02T09:30:00",
+    );
+    expect(
+      utcToBranchFormValues("2026-11-02T14:30:00.000Z", "America/New_York"),
+    ).toEqual({ date: "2026-11-02", time: "09:30" });
+    expect(
+      formatAppointmentDateTime("2026-11-02T14:30:00.000Z", "America/New_York"),
+    ).toContain("9:30");
+  });
+  it("creates UTC ranges across daylight-saving offsets", () => {
+    expect(branchDayUtcRange("2026-03-08", "America/New_York")).toEqual({
+      startDate: "2026-03-08T05:00:00.000Z",
+      endDate: "2026-03-09T03:59:59.999Z",
+    });
+  });
+  it("falls back safely for invalid route dates and branch timezones", () => {
+    expect(safeBranchTimezone("not/a-timezone")).toBe("UTC");
+    const range = branchDayUtcRange("", "not/a-timezone");
+    expect(Date.parse(range.startDate)).not.toBeNaN();
+    expect(Date.parse(range.endDate)).not.toBeNaN();
+  });
+});
+
+describe("status actions and query keys", () => {
+  it("matches backend transition rules", () => {
+    expect(
+      APPOINTMENT_STATUS.SCHEDULED.actions.map((action) => action.status),
+    ).toEqual(["CONFIRMED", "CANCELLED"]);
+    expect(APPOINTMENT_STATUS.COMPLETED.actions).toEqual([]);
+  });
+  it("keeps filter-specific query keys stable", () => {
+    const filters = { page: 1, limit: 20, branchId: "branch" };
+    expect(appointmentKeys.list(filters)).toEqual([
+      "appointments",
+      "list",
+      filters,
+    ]);
+  });
+});

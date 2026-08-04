@@ -1,3 +1,24 @@
-import { api } from './client'; import type { Customer, PaginatedCustomers } from '@/types';
-export type CustomerInput = Pick<Customer, 'firstName' | 'lastName' | 'email' | 'phone' | 'notes'>;
-export const customersService = { async list(params: { page: number; limit: number; search?: string }): Promise<PaginatedCustomers> { return (await api.get<PaginatedCustomers>('/customers', { params })).data; }, async get(id: string): Promise<Customer> { return (await api.get<Customer>(`/customers/${id}`)).data; }, async create(input: CustomerInput): Promise<Customer> { return (await api.post<Customer>('/customers', input)).data; }, async update(id: string, input: Partial<CustomerInput>): Promise<Customer> { return (await api.patch<Customer>(`/customers/${id}`, input)).data; } };
+import { api } from "./client";
+import type { Customer, PaginatedCustomers } from "@/types";
+export type CustomerInput = Pick<
+  Customer,
+  "firstName" | "lastName" | "email" | "phone" | "notes"
+>;
+export const customersService = {
+  async list(params: {
+    page: number;
+    limit: number;
+    search?: string;
+  }): Promise<PaginatedCustomers> {
+    return (await api.get<PaginatedCustomers>("/customers", { params })).data;
+  },
+  async get(id: string): Promise<Customer> {
+    return (await api.get<Customer>(`/customers/${id}`)).data;
+  },
+  async create(input: CustomerInput): Promise<Customer> {
+    return (await api.post<Customer>("/customers", input)).data;
+  },
+  async update(id: string, input: Partial<CustomerInput>): Promise<Customer> {
+    return (await api.patch<Customer>(`/customers/${id}`, input)).data;
+  },
+};

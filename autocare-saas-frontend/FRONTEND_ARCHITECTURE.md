@@ -41,10 +41,10 @@ Primary workspace:
 Customer Workspace
 
 Customer
-    ├── Profile
-    ├── Vehicles
-    ├── Appointments
-    └── Service History
+├── Profile
+├── Vehicles
+├── Appointments
+└── Service History
 
 Future workspaces may include:
 
@@ -56,6 +56,14 @@ A workspace owns the navigation flow for related business entities while backend
 
 Pages should guide users through business workflows instead of exposing unrelated CRUD screens.
 
+## Appointments workspace
+
+The global `/appointments`, `/appointments/new`, and `/appointments/[appointmentId]` routes own branch scheduling, creation, and appointment operations. `/customers/[id]/appointments` is the customer-scoped view and reuses the same appointment hooks and components.
+
+Appointment timestamps received from the API are UTC. `src/features/appointments/appointment-date-utils.ts` uses Luxon to display them in the related branch's IANA timezone and to serialize branch-local form values in the offset-free ISO format expected by the backend. Browser-local time is not the scheduling authority.
+
+Appointment query keys are centralized in `src/features/appointments/appointment-query-keys.ts`, with separate list, calendar, detail, customer, and dashboard groups. Status labels, semantic presentation, and allowed backend transitions are centralized in `src/features/appointments/appointment-status.ts`.
+
 ## Future modules
 
-Vehicles, appointments, invoices/billing, reports, notifications, tenant settings/RBAC, audit history, and AI voice-agent workflows should each be introduced as an independent feature with typed API services, query keys, forms, and route composition. Avoid cross-feature imports except through explicitly shared components or services.
+Vehicles, invoices/billing, reports, notifications, tenant settings/RBAC, audit history, and AI voice-agent workflows should each be introduced as an independent feature with typed API services, query keys, forms, and route composition. Avoid cross-feature imports except through explicitly shared components or services.

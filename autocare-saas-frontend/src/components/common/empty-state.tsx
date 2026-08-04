@@ -1,2 +1,16 @@
-import { Inbox } from 'lucide-react';
-export function EmptyState({ title, description }: { title: string; description: string }): React.JSX.Element { return <div className="flex min-h-52 flex-col items-center justify-center rounded-xl border border-dashed p-8 text-center"><Inbox className="mb-3 size-8 text-slate-400" /><h3 className="font-semibold">{title}</h3><p className="mt-1 max-w-sm text-sm text-slate-500">{description}</p></div>; }
+import { Inbox } from "lucide-react";
+export function EmptyState({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}): React.JSX.Element {
+  return (
+    <div className="flex min-h-52 flex-col items-center justify-center rounded-xl border border-dashed p-8 text-center">
+      <Inbox className="mb-3 size-8 text-slate-400" />
+      <h3 className="font-semibold">{title}</h3>
+      <p className="mt-1 max-w-sm text-sm text-slate-500">{description}</p>
+    </div>
+  );
+}

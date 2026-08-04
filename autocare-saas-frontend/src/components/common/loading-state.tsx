@@ -1,1 +1,16 @@
-export function LoadingState({ rows = 5 }: { rows?: number }): React.JSX.Element { return <div className="space-y-3" aria-label="Loading">{Array.from({ length: rows }, (_, index) => <div key={index} className="h-12 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800" />)}</div>; }
+export function LoadingState({
+  rows = 5,
+}: {
+  rows?: number;
+}): React.JSX.Element {
+  return (
+    <div className="space-y-3" aria-label="Loading">
+      {Array.from({ length: rows }, (_, index) => (
+        <div
+          key={index}
+          className="h-12 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800"
+        />
+      ))}
+    </div>
+  );
+}
