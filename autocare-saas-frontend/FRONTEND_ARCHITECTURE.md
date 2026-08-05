@@ -46,9 +46,19 @@ Customer
 ├── Appointments
 └── Service History
 
+Branch Workspace
+
+Branch
+├── Overview
+├── Business Hours
+├── Appointments — future
+├── Staff — future
+└── Analytics — future
+
+The `/branches` route is the branch-management workspace and `/branches/[branchId]` is its detail view. Branch forms preserve IANA timezone identifiers and treat business-hour values as local wall-clock times; they are never converted to UTC. The current backend supports one opening and closing window applied daily. A shared `components/common/branch-select.tsx` loads active branches for cross-feature forms without exposing private Branch feature components.
+
 Future workspaces may include:
 
-Branch Workspace
 Technician Workspace
 Administration Workspace
 
@@ -64,6 +74,8 @@ Appointment timestamps received from the API are UTC. `src/features/appointments
 
 Appointment query keys are centralized in `src/features/appointments/appointment-query-keys.ts`, with separate list, calendar, detail, customer, and dashboard groups. Status labels, semantic presentation, and allowed backend transitions are centralized in `src/features/appointments/appointment-status.ts`.
 
+Branches are an upstream dependency of Appointments: appointment forms select an active branch through the shared Branch selector and use that branch's IANA timezone and local business hours for scheduling context.
+
 ## Future modules
 
-Vehicles, invoices/billing, reports, notifications, tenant settings/RBAC, audit history, and AI voice-agent workflows should each be introduced as an independent feature with typed API services, query keys, forms, and route composition. Avoid cross-feature imports except through explicitly shared components or services.
+Vehicles, invoices/billing, reports, notifications, tenant settings/RBAC, audit history, technician management, and AI voice-agent workflows should each be introduced as an independent feature with typed API services, query keys, forms, and route composition. Avoid cross-feature imports except through explicitly shared components or services.

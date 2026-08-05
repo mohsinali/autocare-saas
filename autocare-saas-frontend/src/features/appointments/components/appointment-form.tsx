@@ -4,7 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
+import { BranchSelect } from "@/components/common/branch-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -112,19 +113,17 @@ export function AppointmentForm({
     <form className="space-y-5" onSubmit={form.handleSubmit(submit)} noValidate>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Branch" error={form.formState.errors.branchId?.message}>
-          <select
-            className="h-10 w-full rounded-lg border bg-transparent px-3 text-sm"
-            {...form.register("branchId")}
-          >
-            <option value="">Select branch</option>
-            {branches.data?.data
-              .filter((item) => item.isActive)
-              .map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-          </select>
+          <Controller
+            control={form.control}
+            name="branchId"
+            render={({ field }) => (
+              <BranchSelect
+                value={field.value}
+                onChange={field.onChange}
+                invalid={Boolean(form.formState.errors.branchId)}
+              />
+            )}
+          />
         </Field>
         <Field
           label="Estimated duration (minutes)"

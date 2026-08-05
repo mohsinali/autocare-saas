@@ -8,6 +8,7 @@ import {
   FileText,
   Gauge,
   LayoutDashboard,
+  MapPin,
   LogOut,
   Settings,
   Users,
@@ -16,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 const items = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Branches", href: "/branches", icon: MapPin },
   { label: "Customers", href: "/customers", icon: Users },
   { label: "Service History", href: "/service-history", icon: Wrench },
   { label: "Vehicles", href: "#", icon: Car, disabled: true },
@@ -25,22 +27,37 @@ const items = [
 ];
 export function Sidebar({
   onLogout,
+  compact = false,
 }: {
   onLogout: () => void;
+  compact?: boolean;
 }): React.JSX.Element {
   const pathname = usePathname();
   return (
-    <aside className="flex h-full w-64 shrink-0 flex-col border-r bg-white p-4 dark:bg-slate-950">
+    <aside
+      aria-label={compact ? "Mobile workspace navigation" : undefined}
+      className={cn(
+        "flex shrink-0 bg-white dark:bg-slate-950",
+        compact ? "w-full border-b p-2" : "h-full w-64 flex-col border-r p-4",
+      )}
+    >
       <Link
         href="/dashboard"
-        className="mb-8 flex items-center gap-3 px-2 text-lg font-bold"
+        className={cn(
+          "mb-8 items-center gap-3 px-2 text-lg font-bold",
+          compact ? "hidden" : "flex",
+        )}
       >
         <span className="grid size-9 place-items-center rounded-xl bg-blue-600 text-white">
           <Gauge className="size-5" />
         </span>
         AutoCare
       </Link>
-      <nav className="space-y-1">
+      <nav
+        className={cn(
+          compact ? "flex w-full gap-1 overflow-x-auto" : "space-y-1",
+        )}
+      >
         {items.map(({ label, href, icon: Icon, disabled }) => (
           <Link
             key={label}
@@ -50,8 +67,8 @@ export function Sidebar({
               if (disabled) event.preventDefault();
             }}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors dark:text-slate-400",
-              pathname === href &&
+              "flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors dark:text-slate-400",
+              (pathname === href || pathname.startsWith(`${href}/`)) &&
                 "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300",
               disabled
                 ? "cursor-not-allowed opacity-40"
@@ -63,7 +80,7 @@ export function Sidebar({
           </Link>
         ))}
       </nav>
-      <div className="mt-auto space-y-1">
+      <div className={cn("mt-auto space-y-1", compact && "hidden")}>
         <Link
           href="/settings"
           className={cn(

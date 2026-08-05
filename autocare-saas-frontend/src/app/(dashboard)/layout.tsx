@@ -27,6 +27,9 @@ export default function DashboardLayout({
       </div>
       <div className="min-w-0 flex-1">
         <Topbar email={session.user.email} />
+        <div className="md:hidden">
+          <Sidebar onLogout={logout} compact />
+        </div>
         <main className="mx-auto max-w-7xl p-5 md:p-8">{children}</main>
       </div>
     </div>

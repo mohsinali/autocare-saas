@@ -1,19 +1,21 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import { branchesService } from "@/services/api/branches.service";
+import { branchQueryKeys } from "@/features/branches/branch-query-keys";
 import { customersService } from "@/services/api/customers.service";
 import { vehiclesService } from "@/services/api/vehicles.service";
 
 export function useBranches() {
+  const params = { page: 1, limit: 100 } as const;
   return useQuery({
-    queryKey: ["branches", { limit: 100 }],
-    queryFn: () => branchesService.list({ page: 1, limit: 100 }),
+    queryKey: branchQueryKeys.list(params),
+    queryFn: () => branchesService.list(params),
     staleTime: 300_000,
   });
 }
 export function useBranch(id: string) {
   return useQuery({
-    queryKey: ["branches", id],
+    queryKey: branchQueryKeys.detail(id),
     queryFn: () => branchesService.get(id),
     enabled: Boolean(id),
     staleTime: 300_000,
