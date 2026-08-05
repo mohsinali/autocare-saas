@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   appointmentsService,
+  normalizeAppointmentFilters,
   type AppointmentCalendarParams,
   type AppointmentFilters,
   type CreateAppointmentInput,
@@ -14,9 +15,10 @@ import { appointmentKeys } from "./appointment-query-keys";
 
 const staleTime = 30_000;
 export function useAppointments(filters: AppointmentFilters) {
+  const normalized = normalizeAppointmentFilters(filters);
   return useQuery({
-    queryKey: appointmentKeys.list(filters),
-    queryFn: () => appointmentsService.list(filters),
+    queryKey: appointmentKeys.list(normalized),
+    queryFn: () => appointmentsService.list(normalized),
     staleTime,
   });
 }

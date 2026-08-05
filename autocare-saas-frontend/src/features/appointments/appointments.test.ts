@@ -9,6 +9,7 @@ import {
 } from "./appointment-date-utils";
 import { appointmentKeys } from "./appointment-query-keys";
 import { APPOINTMENT_STATUS } from "./appointment-status";
+import { normalizeAppointmentFilters } from "../../services/api/appointments.service";
 
 describe("appointment form", () => {
   it("rejects missing selections and invalid duration", () => {
@@ -64,7 +65,65 @@ describe("status actions and query keys", () => {
     expect(appointmentKeys.list(filters)).toEqual([
       "appointments",
       "list",
-      filters,
+      1,
+      20,
+      undefined,
+      "branch",
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
     ]);
+  });
+
+  it("omits empty, false, and invalid list filters", () => {
+    expect(
+      normalizeAppointmentFilters({
+        page: 0,
+        limit: 10,
+        branchId: "",
+        customerId: "  ",
+        vehicleId: "",
+        search: " ",
+        startDate: "invalid",
+        endDate: "",
+        today: false,
+        tomorrow: false,
+        upcoming: false,
+      }),
+    ).toEqual({ page: 1, limit: 10 });
+  });
+
+  it("preserves meaningful supported list filters", () => {
+    expect(
+      normalizeAppointmentFilters({
+        page: 2,
+        limit: 20,
+        customerId: "customer-id",
+        status: "CONFIRMED",
+        serviceType: " brakes ",
+        startDate: "2026-08-05T00:00:00.000Z",
+        upcoming: true,
+        sortBy: "createdAt",
+        sortOrder: "desc",
+      }),
+    ).toEqual({
+      page: 2,
+      limit: 20,
+      customerId: "customer-id",
+      status: "CONFIRMED",
+      serviceType: "brakes",
+      startDate: "2026-08-05T00:00:00.000Z",
+      upcoming: true,
+      sortBy: "createdAt",
+      sortOrder: "desc",
+    });
   });
 });

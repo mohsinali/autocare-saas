@@ -27,6 +27,52 @@ export interface AppointmentCalendarParams {
   endDate: string;
   branchId?: string;
 }
+
+function meaningful(value: string | undefined): string | undefined {
+  const normalized = value?.trim();
+  return normalized || undefined;
+}
+
+function validIso(value: string | undefined): string | undefined {
+  return value && !Number.isNaN(Date.parse(value)) ? value : undefined;
+}
+
+export function normalizeAppointmentFilters(
+  filters: AppointmentFilters,
+): AppointmentFilters {
+  return {
+    page: Number.isInteger(filters.page) && filters.page > 0 ? filters.page : 1,
+    limit:
+      Number.isInteger(filters.limit) && filters.limit > 0 ? filters.limit : 20,
+    ...(meaningful(filters.search)
+      ? { search: meaningful(filters.search) }
+      : {}),
+    ...(meaningful(filters.branchId)
+      ? { branchId: meaningful(filters.branchId) }
+      : {}),
+    ...(meaningful(filters.customerId)
+      ? { customerId: meaningful(filters.customerId) }
+      : {}),
+    ...(meaningful(filters.vehicleId)
+      ? { vehicleId: meaningful(filters.vehicleId) }
+      : {}),
+    ...(filters.status ? { status: filters.status } : {}),
+    ...(meaningful(filters.serviceType)
+      ? { serviceType: meaningful(filters.serviceType) }
+      : {}),
+    ...(validIso(filters.startDate)
+      ? { startDate: validIso(filters.startDate) }
+      : {}),
+    ...(validIso(filters.endDate)
+      ? { endDate: validIso(filters.endDate) }
+      : {}),
+    ...(filters.today === true ? { today: true } : {}),
+    ...(filters.tomorrow === true ? { tomorrow: true } : {}),
+    ...(filters.upcoming === true ? { upcoming: true } : {}),
+    ...(filters.sortBy ? { sortBy: filters.sortBy } : {}),
+    ...(filters.sortOrder ? { sortOrder: filters.sortOrder } : {}),
+  };
+}
 export interface CreateAppointmentInput {
   branchId: string;
   vehicleId: string;
@@ -49,8 +95,11 @@ export interface StatusUpdateInput {
 
 export const appointmentsService = {
   async list(params: AppointmentFilters): Promise<PaginatedAppointments> {
-    return (await api.get<PaginatedAppointments>("/appointments", { params }))
-      .data;
+    return (
+      await api.get<PaginatedAppointments>("/appointments", {
+        params: normalizeAppointmentFilters(params),
+      })
+    ).data;
   },
   async calendar(params: AppointmentCalendarParams): Promise<Appointment[]> {
     return (await api.get<Appointment[]>("/appointments/calendar", { params }))
