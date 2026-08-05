@@ -3,27 +3,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCreateVehicle, useUpdateVehicle } from "./vehicle-hooks";
 import type { Vehicle, VehicleStatus } from "@/types";
-
-const optionalText = z.string().trim().max(120).optional();
-const schema = z.object({
-  registrationNumber: optionalText,
-  make: optionalText,
-  model: optionalText,
-  variant: optionalText,
-  year: z
-    .string()
-    .regex(/^(|18[89]\d|19\d{2}|20\d{2}|[3-9]\d{3})$/, "Enter a valid year")
-    .optional(),
-  currentMileage: z.coerce.number().int().min(0, "Mileage cannot be negative"),
-  status: z.enum(["ACTIVE", "INACTIVE", "SOLD", "SCRAPPED"]),
-  notes: z.string().trim().max(2000).optional(),
-});
-type VehicleFormValues = z.infer<typeof schema>;
+import { vehicleFormSchema, type VehicleFormValues } from "./vehicle-schema";
 const defaultValues: VehicleFormValues = {
   registrationNumber: "",
   make: "",
@@ -47,7 +31,7 @@ export function VehicleForm({
   const createVehicle = useCreateVehicle();
   const updateVehicle = useUpdateVehicle();
   const form = useForm<VehicleFormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(vehicleFormSchema),
     defaultValues,
   });
   useEffect(() => {

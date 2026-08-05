@@ -5,7 +5,6 @@ import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,14 +12,7 @@ import {
   type CustomerInput,
 } from "@/services/api/customers.service";
 import type { Customer } from "@/types";
-const schema = z.object({
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  email: z.string().email().or(z.literal("")),
-  phone: z.string().min(5),
-  notes: z.string().max(2000).optional(),
-});
-type Values = z.infer<typeof schema>;
+import { customerFormSchema, type CustomerFormValues } from "./customer-schema";
 export function CustomerForm({
   customer,
   onSuccess,
@@ -29,8 +21,8 @@ export function CustomerForm({
   onSuccess: () => void;
 }): React.JSX.Element {
   const queryClient = useQueryClient();
-  const form = useForm<Values>({
-    resolver: zodResolver(schema),
+  const form = useForm<CustomerFormValues>({
+    resolver: zodResolver(customerFormSchema),
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -48,7 +40,7 @@ export function CustomerForm({
       });
   }, [customer, form]);
   const mutation = useMutation({
-    mutationFn: (values: Values) => {
+    mutationFn: (values: CustomerFormValues) => {
       const input: CustomerInput = {
         ...values,
         email: values.email || null,
