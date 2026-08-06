@@ -1,0 +1,1 @@
+ALTER TABLE "Tenant" ADD COLUMN "currencyCode" TEXT NOT NULL DEFAULT 'USD';
