@@ -78,6 +78,8 @@ Branches are an upstream dependency of Appointments: appointment forms select an
 
 ## Service History workspace
 
+Monetary values are formatted through the shared currency formatter using the authenticated tenant's configured ISO currency code. Feature components must not hardcode currency symbols. Currency settings change display formatting only and do not perform exchange-rate conversion.
+
 ```text
 Global:
 Service History

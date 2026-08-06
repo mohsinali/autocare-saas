@@ -19,6 +19,17 @@ import {
   InitialLineItemCreationError,
 } from "./service-history-create";
 import { serviceHistoryErrorMessage } from "./service-history-error";
+import {
+  formatServiceHistorySubtotal,
+  formatServiceLineItemAmounts,
+} from "./service-history-currency";
+import {
+  DEFAULT_CURRENCY_CODE,
+  formatCurrency,
+  INVALID_CURRENCY_VALUE,
+} from "../../lib/currency";
+import { QueryClient } from "@tanstack/react-query";
+import { settingsQueryKeys } from "../settings/settings-query-keys";
 
 const validHistory = {
   branchId: "11111111-1111-4111-8111-111111111111",
@@ -118,6 +129,53 @@ describe("Service History status and cache behavior", () => {
     expect(serviceHistoryInvalidationKeys("history", true)).toContainEqual([
       "vehicles",
     ]);
+  });
+});
+
+describe("Service History tenant currency display", () => {
+  it("formats USD, PKR, and EUR using Intl currency rules", () => {
+    expect(formatCurrency("125.00", "USD", "en-US")).toBe("$125.00");
+    expect(formatCurrency("125.00", "PKR", "en-US")).toContain("PKR");
+    expect(formatCurrency("125.00", "EUR", "en-US")).toBe("€125.00");
+  });
+
+  it("safely handles invalid values and currency codes", () => {
+    expect(formatCurrency("not-a-decimal", "USD")).toBe(INVALID_CURRENCY_VALUE);
+    expect(formatCurrency(undefined, "USD")).toBe(INVALID_CURRENCY_VALUE);
+    expect(formatCurrency("  ", "USD")).toBe(INVALID_CURRENCY_VALUE);
+    expect(formatCurrency("10.00", "invalid", "en-US")).toBe("$10.00");
+  });
+
+  it("uses one currency for list subtotal and all detail amounts", () => {
+    expect(formatServiceHistorySubtotal("100.00", "GBP")).toContain("£");
+    const amounts = formatServiceLineItemAmounts(
+      { unitPrice: "25.00", lineTotal: "100.00" },
+      "GBP",
+    );
+    expect(amounts.unitPrice).toContain("£");
+    expect(amounts.lineTotal).toContain("£");
+  });
+
+  it("changes display currency from cached tenant settings without conversion", () => {
+    const client = new QueryClient();
+    client.setQueryData(settingsQueryKeys.all, { currencyCode: "USD" });
+    const usd = client.getQueryData<{ currencyCode: string }>(
+      settingsQueryKeys.all,
+    )?.currencyCode;
+    client.setQueryData(settingsQueryKeys.all, { currencyCode: "PKR" });
+    const pkr = client.getQueryData<{ currencyCode: string }>(
+      settingsQueryKeys.all,
+    )?.currencyCode;
+
+    expect(
+      formatServiceHistorySubtotal("100.00", usd ?? DEFAULT_CURRENCY_CODE),
+    ).toBe("$100.00");
+    const formatted = formatServiceHistorySubtotal(
+      "100.00",
+      pkr ?? DEFAULT_CURRENCY_CODE,
+    );
+    expect(formatted).toContain("PKR");
+    expect(formatted).toContain("100.00");
   });
 });
 

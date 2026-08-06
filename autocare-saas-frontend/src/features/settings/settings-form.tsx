@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { TenantSettings } from "@/services/api/tenant-settings.service";
+import { DEFAULT_CURRENCY_CODE } from "@/lib/currency";
 import { currencies } from "./currencies";
 import { useUpdateTenantSettings } from "./settings-hooks";
 import { settingsFormSchema, type SettingsFormValues } from "./settings-schema";
@@ -35,11 +36,15 @@ export function SettingsForm({
   const mutation = useUpdateTenantSettings();
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsFormSchema),
-    defaultValues: { currencyCode: settings.currencyCode || "USD" },
+    defaultValues: {
+      currencyCode: settings.currencyCode || DEFAULT_CURRENCY_CODE,
+    },
   });
 
   useEffect(() => {
-    form.reset({ currencyCode: settings.currencyCode || "USD" });
+    form.reset({
+      currencyCode: settings.currencyCode || DEFAULT_CURRENCY_CODE,
+    });
   }, [form, settings.currencyCode]);
 
   function submit(values: SettingsFormValues): void {

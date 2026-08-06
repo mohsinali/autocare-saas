@@ -10,7 +10,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { formatAppointmentDateTime } from "@/features/appointments/appointment-date-utils";
 import { useBranches } from "@/features/appointments/reference-hooks";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { useTenantCurrency } from "@/features/settings/settings-hooks";
+import { formatDate } from "@/lib/utils";
+import { formatServiceHistorySubtotal } from "../service-history-currency";
 import { useServiceHistories } from "../service-history-hooks";
 import type { ServiceHistoryStatus } from "@/types";
 
@@ -38,6 +40,7 @@ export function ServiceHistoryWorkspace({
   const search = params.get("search") ?? "";
   const branchId = params.get("branch") ?? "";
   const branches = useBranches();
+  const currencyCode = useTenantCurrency();
   const query = useServiceHistories({
     page,
     limit: compact ? 5 : 10,
@@ -213,7 +216,7 @@ export function ServiceHistoryWorkspace({
                 >
                   {item.status === "CANCELLED"
                     ? "No charge"
-                    : formatCurrency(item.subtotal)}
+                    : formatServiceHistorySubtotal(item.subtotal, currencyCode)}
                 </span>
               </div>
             </Link>

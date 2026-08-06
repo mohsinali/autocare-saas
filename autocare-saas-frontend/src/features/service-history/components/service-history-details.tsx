@@ -19,7 +19,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { formatAppointmentDateTime } from "@/features/appointments/appointment-date-utils";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { useTenantCurrency } from "@/features/settings/settings-hooks";
+import { formatDate } from "@/lib/utils";
 import {
   completionSchema,
   lineItemSchema,
@@ -41,6 +42,10 @@ import {
   canCancelServiceHistory,
   canEditServiceHistory,
 } from "../service-history-status";
+import {
+  formatServiceHistorySubtotal,
+  formatServiceLineItemAmounts,
+} from "../service-history-currency";
 
 export function ServiceHistoryDetails({
   id,
@@ -48,6 +53,7 @@ export function ServiceHistoryDetails({
   id: string;
 }): React.JSX.Element {
   const query = useServiceHistory(id);
+  const currencyCode = useTenantCurrency();
   const [edit, setEdit] = useState(false);
   const [lineItem, setLineItem] = useState<
     ServiceLineItem | null | undefined
@@ -152,6 +158,7 @@ export function ServiceHistoryDetails({
                         editable={editable}
                         onEdit={() => setLineItem(line)}
                         historyId={item.id}
+                        currencyCode={currencyCode}
                       />
                     ))}
                   </tbody>
@@ -160,7 +167,12 @@ export function ServiceHistoryDetails({
                       <td className="py-4" colSpan={3}>
                         Subtotal
                       </td>
-                      <td>{formatCurrency(item.subtotal)}</td>
+                      <td>
+                        {formatServiceHistorySubtotal(
+                          item.subtotal,
+                          currencyCode,
+                        )}
+                      </td>
                       {editable && <td />}
                     </tr>
                   </tfoot>
@@ -257,7 +269,11 @@ export function ServiceHistoryDetails({
       </Dialog>
       <Dialog open={complete} onOpenChange={setComplete}>
         <DialogContent>
-          <CompleteDialog item={item} onDone={() => setComplete(false)} />
+          <CompleteDialog
+            item={item}
+            currencyCode={currencyCode}
+            onDone={() => setComplete(false)}
+          />
         </DialogContent>
       </Dialog>
       <Dialog open={cancel} onOpenChange={setCancel}>
@@ -273,13 +289,16 @@ function LineRow({
   editable,
   onEdit,
   historyId,
+  currencyCode,
 }: {
   line: ServiceLineItem;
   editable: boolean;
   onEdit: () => void;
   historyId: string;
+  currencyCode: string;
 }): React.JSX.Element {
   const remove = useDeleteServiceLineItem(historyId);
+  const amounts = formatServiceLineItemAmounts(line, currencyCode);
   return (
     <tr className="border-b last:border-0">
       <td className="py-4">
@@ -288,8 +307,8 @@ function LineRow({
         {line.notes && <p className="text-xs text-slate-500">{line.notes}</p>}
       </td>
       <td>{line.quantity}</td>
-      <td>{formatCurrency(line.unitPrice)}</td>
-      <td className="font-medium">{formatCurrency(line.lineTotal)}</td>
+      <td>{amounts.unitPrice}</td>
+      <td className="font-medium">{amounts.lineTotal}</td>
       {editable && (
         <td>
           <div className="flex justify-end gap-1">
@@ -460,9 +479,11 @@ function EditJobForm({
 }
 function CompleteDialog({
   item,
+  currencyCode,
   onDone,
 }: {
   item: ServiceHistory;
+  currencyCode: string;
   onDone: () => void;
 }): React.JSX.Element {
   const mutation = useCompleteServiceHistory(item.id);
@@ -500,7 +521,7 @@ function CompleteDialog({
           {vehicleName(item)}
         </p>
         <p className="mt-1 font-semibold">
-          Subtotal {formatCurrency(item.subtotal)}
+          Subtotal {formatServiceHistorySubtotal(item.subtotal, currencyCode)}
         </p>
         <p className="text-slate-500">
           Current vehicle mileage:{" "}

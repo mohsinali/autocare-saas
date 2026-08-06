@@ -6,6 +6,7 @@ import {
   tenantSettingsService,
   type UpdateTenantSettingsInput,
 } from "@/services/api/tenant-settings.service";
+import { DEFAULT_CURRENCY_CODE } from "@/lib/currency";
 import { settingsQueryKeys } from "./settings-query-keys";
 
 export function useTenantSettings() {
@@ -14,6 +15,11 @@ export function useTenantSettings() {
     queryFn: tenantSettingsService.get,
     staleTime: 300_000,
   });
+}
+
+export function useTenantCurrency(): string {
+  const settings = useTenantSettings();
+  return settings.data?.currencyCode || DEFAULT_CURRENCY_CODE;
 }
 
 export function useUpdateTenantSettings() {
