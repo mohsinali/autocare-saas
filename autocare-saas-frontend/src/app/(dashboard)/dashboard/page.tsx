@@ -1,7 +1,14 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, CalendarDays, Car, Plus, Users } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarDays,
+  Car,
+  Plus,
+  Users,
+  Wrench,
+} from "lucide-react";
 import Link from "next/link";
 import { ErrorState } from "@/components/common/error-state";
 import { LoadingState } from "@/components/common/loading-state";
@@ -12,6 +19,8 @@ import { appointmentKeys } from "@/features/appointments/appointment-query-keys"
 import { useVehicles } from "@/features/vehicles/vehicle-hooks";
 import { formatDate } from "@/lib/utils";
 import { appointmentsService } from "@/services/api/appointments.service";
+import { serviceHistoryService } from "@/services/api/service-history.service";
+import { serviceHistoryKeys } from "@/features/service-history/service-history-query-keys";
 
 export default function DashboardPage(): React.JSX.Element {
   const customers = useCustomers({ page: 1, limit: 5 });
@@ -19,6 +28,11 @@ export default function DashboardPage(): React.JSX.Element {
   const appointments = useQuery({
     queryKey: appointmentKeys.dashboard(),
     queryFn: appointmentsService.listToday,
+  });
+  const activeJobs = useQuery({
+    queryKey: serviceHistoryKeys.list({ page: 1, limit: 1, status: "DRAFT" }),
+    queryFn: () =>
+      serviceHistoryService.list({ page: 1, limit: 1, status: "DRAFT" }),
   });
   return (
     <div className="space-y-8">
@@ -36,12 +50,18 @@ export default function DashboardPage(): React.JSX.Element {
           </Link>
         }
       />
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Metric
           label="Customers"
           value={customers.data?.total}
           icon={Users}
           accent="bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300"
+        />
+        <Metric
+          label="Active jobs"
+          value={activeJobs.data?.total}
+          icon={Wrench}
+          accent="bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-300"
         />
         <Metric
           label="Vehicles"
@@ -82,6 +102,12 @@ export default function DashboardPage(): React.JSX.Element {
               title="New Appointment"
               description="Schedule a new customer appointment."
               icon={CalendarDays}
+            />
+            <QuickAction
+              href="/service-history/new"
+              title="New Service Record"
+              description="Open an active workshop job for a vehicle."
+              icon={Wrench}
             />
           </CardContent>
         </Card>

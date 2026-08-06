@@ -5,9 +5,11 @@ import { EmptyState } from "@/components/common/empty-state";
 import { ErrorState } from "@/components/common/error-state";
 import { LoadingState } from "@/components/common/loading-state";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useCustomer } from "@/features/customers/customer-hooks";
 import { useAppointment } from "../appointment-hooks";
 import { formatAppointmentDateTime } from "../appointment-date-utils";
+import { utcToBranchFormValues } from "../appointment-date-utils";
 import { useAppointmentVehicles, useBranch } from "../reference-hooks";
 import { AppointmentActions } from "./appointment-actions";
 import { AppointmentStatusBadge } from "./appointment-status-badge";
@@ -64,12 +66,37 @@ export function AppointmentDetailsView({
           </p>
         </div>
         {branch.data && (
-          <AppointmentActions
-            appointment={item}
-            branch={branch.data}
-            customer={customer.data}
-            vehicle={vehicle}
-          />
+          <div className="flex flex-wrap gap-2">
+            {item.status !== "CANCELLED" &&
+              item.status !== "NO_SHOW" &&
+              (() => {
+                const local = utcToBranchFormValues(
+                  item.appointmentDateTimeUtc,
+                  branch.data.timezone,
+                );
+                const query = new URLSearchParams({
+                  appointmentId: item.id,
+                  branchId: item.branchId,
+                  customerId: item.customerId,
+                  vehicleId: item.vehicleId,
+                  date: local.date,
+                  time: local.time,
+                  initialRequest: item.serviceRequested,
+                  returnTo: `/appointments/${item.id}`,
+                });
+                return (
+                  <Link href={`/service-history/new?${query.toString()}`}>
+                    <Button>Create Service Record</Button>
+                  </Link>
+                );
+              })()}
+            <AppointmentActions
+              appointment={item}
+              branch={branch.data}
+              customer={customer.data}
+              vehicle={vehicle}
+            />
+          </div>
         )}
       </div>
       <div className="grid gap-5 lg:grid-cols-3">
