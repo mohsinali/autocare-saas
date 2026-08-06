@@ -1,4 +1,6 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { SettingsWorkspace } from "@/features/settings/settings-workspace";
+
 export default function SettingsPage(): React.JSX.Element {
   return (
     <div className="max-w-2xl">
@@ -8,10 +10,7 @@ export default function SettingsPage(): React.JSX.Element {
           <h3 className="font-semibold">Workspace settings</h3>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-slate-500">
-            Workspace administration will be available as tenant settings and
-            RBAC are added to the API.
-          </p>
+          <SettingsWorkspace />
         </CardContent>
       </Card>
     </div>
