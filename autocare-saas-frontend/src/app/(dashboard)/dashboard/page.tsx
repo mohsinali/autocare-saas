@@ -77,6 +77,12 @@ export default function DashboardPage(): React.JSX.Element {
               description="Open a customer workspace to register a vehicle."
               icon={Car}
             />
+            <QuickAction
+              href="/appointments/new"
+              title="New Appointment"
+              description="Schedule a new customer appointment."
+              icon={CalendarDays}
+            />
           </CardContent>
         </Card>
         <Card className="lg:col-span-2">
