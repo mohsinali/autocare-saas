@@ -31,6 +31,10 @@ export class BranchesService {
     return branch;
   }
 
+  findTimezones(tenantId: string, id?: string) {
+    return this.repository.findTimezones(tenantId, id);
+  }
+
   async update(tenantId: string, id: string, dto: UpdateBranchDto) {
     const existing = await this.findOne(tenantId, id);
     this.assertBusinessHours({ businessOpeningTime: dto.businessOpeningTime ?? this.dateToTime(existing.businessOpeningTime), businessClosingTime: dto.businessClosingTime ?? this.dateToTime(existing.businessClosingTime) });

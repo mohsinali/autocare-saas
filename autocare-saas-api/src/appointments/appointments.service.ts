@@ -88,7 +88,7 @@ export class AppointmentsService {
     totalPages: number;
   }> {
     this.assertDateRange(query.startDate, query.endDate);
-    const filters = this.toListFilters(query);
+    const filters = await this.toListFilters(tenantId, query);
     const result = await this.repository.list(
       tenantId,
       query.page,
@@ -269,20 +269,28 @@ export class AppointmentsService {
         "startDate must be before or equal to endDate",
       );
   }
-  private toListFilters(query: ListAppointmentsDto): AppointmentListFilters {
+  private async toListFilters(
+    tenantId: string,
+    query: ListAppointmentsDto,
+  ): Promise<AppointmentListFilters> {
     const now = new Date();
-    const dayStart = new Date(
-      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-    );
-    const tomorrowStart = new Date(dayStart.getTime() + 86_400_000);
-    const afterTomorrowStart = new Date(tomorrowStart.getTime() + 86_400_000);
-    const dateRange = query.today
-      ? { startDate: dayStart, endDate: new Date(tomorrowStart.getTime() - 1) }
-      : query.tomorrow
-        ? {
-            startDate: tomorrowStart,
-            endDate: new Date(afterTomorrowStart.getTime() - 1),
-          }
+    const localDayOffset = query.today ? 0 : query.tomorrow ? 1 : undefined;
+    const branchDateRanges =
+      localDayOffset !== undefined
+        ? (await this.branches.findTimezones(tenantId, query.branchId)).map(
+            (branch) => ({
+              branchId: branch.id,
+              ...this.timezone.localDayUtcRange(
+                branch.timezone,
+                localDayOffset,
+                now,
+              ),
+            }),
+          )
+        : undefined;
+    const dateRange =
+      localDayOffset !== undefined
+        ? { branchDateRanges }
         : query.upcoming
           ? { startDate: now }
           : {

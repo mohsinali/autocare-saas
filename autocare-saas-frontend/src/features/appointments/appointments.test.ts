@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { appointmentFormSchema } from "./appointment-schema";
 import {
   branchDayUtcRange,
@@ -9,7 +9,10 @@ import {
 } from "./appointment-date-utils";
 import { appointmentKeys } from "./appointment-query-keys";
 import { APPOINTMENT_STATUS } from "./appointment-status";
-import { normalizeAppointmentFilters } from "../../services/api/appointments.service";
+import {
+  appointmentsService,
+  normalizeAppointmentFilters,
+} from "../../services/api/appointments.service";
 
 describe("appointment form", () => {
   it("rejects missing selections and invalid duration", () => {
@@ -54,6 +57,16 @@ describe("branch timezone conversion", () => {
 });
 
 describe("status actions and query keys", () => {
+  it("loads dashboard appointments when used as an unbound query function", async () => {
+    const response = { data: [], total: 0, page: 1, limit: 5, totalPages: 0 };
+    const list = vi.spyOn(appointmentsService, "list").mockResolvedValue(response);
+    const queryFn = appointmentsService.listToday;
+
+    await expect(queryFn()).resolves.toEqual(response);
+    expect(list).toHaveBeenCalledWith({ page: 1, limit: 5, today: true });
+    list.mockRestore();
+  });
+
   it("matches backend transition rules", () => {
     expect(
       APPOINTMENT_STATUS.SCHEDULED.actions.map((action) => action.status),

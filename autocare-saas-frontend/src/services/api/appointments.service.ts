@@ -139,6 +139,6 @@ export const appointmentsService = {
     await api.delete(`/appointments/${id}`);
   },
   async listToday(): Promise<PaginatedAppointments> {
-    return this.list({ page: 1, limit: 5, today: true });
+    return appointmentsService.list({ page: 1, limit: 5, today: true });
   },
 };

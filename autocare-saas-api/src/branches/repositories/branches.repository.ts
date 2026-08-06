@@ -8,6 +8,12 @@ export class BranchesRepository {
 
   create(data: Prisma.BranchUncheckedCreateInput): Promise<Branch> { return this.prisma.branch.create({ data }); }
   findById(tenantId: string, id: string): Promise<Branch | null> { return this.prisma.branch.findFirst({ where: { id, tenantId, deletedAt: null } }); }
+  findTimezones(tenantId: string, id?: string): Promise<Pick<Branch, 'id' | 'timezone'>[]> {
+    return this.prisma.branch.findMany({
+      where: { tenantId, ...(id ? { id } : {}) },
+      select: { id: true, timezone: true },
+    });
+  }
   update(tenantId: string, id: string, data: Prisma.BranchUpdateInput): Promise<Branch> { return this.prisma.branch.update({ where: { id_tenantId: { id, tenantId } }, data }); }
   softDelete(tenantId: string, id: string): Promise<Branch> { return this.prisma.branch.update({ where: { id_tenantId: { id, tenantId } }, data: { deletedAt: new Date(), isActive: false } }); }
 

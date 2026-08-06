@@ -21,6 +21,16 @@ export class TimezoneService {
     return utc.setZone(timezone).toFormat("yyyy-LL-dd'T'HH:mm:ss");
   }
 
+  localDayUtcRange(timezone: string, dayOffset = 0, now = new Date()): { startDate: Date; endDate: Date } {
+    this.assertValidTimezone(timezone);
+    const localDay = DateTime.fromJSDate(now, { zone: 'utc' }).setZone(timezone).plus({ days: dayOffset });
+    if (!localDay.isValid) throw new BadRequestException('Invalid reference date');
+    return {
+      startDate: localDay.startOf('day').toUTC().toJSDate(),
+      endDate: localDay.endOf('day').toUTC().toJSDate(),
+    };
+  }
+
   private assertValidTimezone(timezone: string): void {
     if (!this.isValidTimezone(timezone)) throw new BadRequestException('timezone must be a valid IANA timezone identifier');
   }

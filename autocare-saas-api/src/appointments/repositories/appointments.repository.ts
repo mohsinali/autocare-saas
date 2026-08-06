@@ -11,6 +11,7 @@ export interface AppointmentListFilters {
   serviceType?: string;
   startDate?: Date;
   endDate?: Date;
+  branchDateRanges?: { branchId: string; startDate: Date; endDate: Date }[];
   sortBy: "appointmentDateTimeUtc" | "createdAt" | "updatedAt" | "status";
   sortOrder: "asc" | "desc";
 }
@@ -118,6 +119,17 @@ export class AppointmentsRepository {
               ...(filters.startDate ? { gte: filters.startDate } : {}),
               ...(filters.endDate ? { lte: filters.endDate } : {}),
             },
+          }
+        : {}),
+      ...(filters.branchDateRanges
+        ? {
+            OR: filters.branchDateRanges.map((range) => ({
+              branchId: range.branchId,
+              appointmentDateTimeUtc: {
+                gte: range.startDate,
+                lte: range.endDate,
+              },
+            })),
           }
         : {}),
       ...(filters.search

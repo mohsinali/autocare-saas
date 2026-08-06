@@ -7,6 +7,7 @@ import {
 } from "@prisma/client";
 import { DateTime } from "luxon";
 import { AppointmentsService } from "./appointments.service";
+import { TimezoneService } from "../timezone/timezone.service";
 
 const tenantId = "11111111-1111-4111-8111-111111111111";
 const userId = "22222222-2222-4222-8222-222222222222";
@@ -33,12 +34,21 @@ describe("AppointmentsService", () => {
     calendar: jest.fn(),
   };
   const vehicles = { findOne: jest.fn() };
-  const branches = { findActiveOne: jest.fn(), findOne: jest.fn() };
+  const branches = {
+    findActiveOne: jest.fn(),
+    findOne: jest.fn(),
+    findTimezones: jest.fn(),
+  };
+  const timezoneService = new TimezoneService();
   const timezone = {
     convertLocalToUtc: jest.fn((value: string, zone: string) =>
       DateTime.fromISO(value, { zone }).toUTC().toJSDate(),
     ),
     convertUtcToLocal: jest.fn(),
+    localDayUtcRange: jest.fn(
+      (zone: string, dayOffset: number, now: Date) =>
+        timezoneService.localDayUtcRange(zone, dayOffset, now),
+    ),
   };
   const service = new AppointmentsService(
     repository as never,
@@ -80,6 +90,9 @@ describe("AppointmentsService", () => {
     jest.clearAllMocks();
     vehicles.findOne.mockResolvedValue(vehicle);
     branches.findActiveOne.mockResolvedValue(branch);
+    branches.findTimezones.mockResolvedValue([
+      { id: branchId, timezone: branch.timezone },
+    ]);
     repository.findConflict.mockResolvedValue(null);
     repository.create.mockResolvedValue(appointment());
     repository.update.mockResolvedValue(appointment());
@@ -154,5 +167,61 @@ describe("AppointmentsService", () => {
     expect(repository.update).toHaveBeenCalledWith(tenantId, existing.id, {
       appointmentDateTimeUtc: expect.any(Date),
     });
+  });
+
+  it("filters today using each branch's local calendar-day UTC boundaries", async () => {
+    jest.useFakeTimers().setSystemTime(new Date("2026-08-06T07:00:00.000Z"));
+    const newYorkBranchId = "77777777-7777-4777-8777-777777777777";
+    branches.findTimezones.mockResolvedValue([
+      { id: branchId, timezone: "Asia/Karachi" },
+      { id: newYorkBranchId, timezone: "America/New_York" },
+    ]);
+    const records = [
+      { ...appointment(), id: "before", appointmentDateTimeUtc: new Date("2026-08-05T18:59:59.999Z") },
+      { ...appointment(), id: "early", appointmentDateTimeUtc: new Date("2026-08-06T06:30:00.000Z") },
+      { ...appointment(), id: "later", appointmentDateTimeUtc: new Date("2026-08-06T11:00:00.000Z") },
+      { ...appointment(), id: "after", appointmentDateTimeUtc: new Date("2026-08-06T19:00:00.000Z") },
+      { ...appointment(), id: "other-zone", branchId: newYorkBranchId, appointmentDateTimeUtc: new Date("2026-08-06T16:00:00.000Z") },
+    ];
+    repository.list.mockImplementation(
+      async (_tenant: string, _page: number, _limit: number, filters: { branchDateRanges: { branchId: string; startDate: Date; endDate: Date }[] }) => {
+        const data = records.filter((record) =>
+          filters.branchDateRanges.some(
+            (range) =>
+              range.branchId === record.branchId &&
+              record.appointmentDateTimeUtc >= range.startDate &&
+              record.appointmentDateTimeUtc <= range.endDate,
+          ),
+        );
+        return { data, total: data.length };
+      },
+    );
+
+    const result = await service.findAll(tenantId, {
+      page: 1,
+      limit: 10,
+      today: true,
+      sortBy: "appointmentDateTimeUtc",
+      sortOrder: "asc",
+    });
+
+    expect(result.data.map((item) => item.id)).toEqual([
+      "early",
+      "later",
+      "other-zone",
+    ]);
+    expect(repository.list.mock.calls[0][3].branchDateRanges).toEqual([
+      {
+        branchId,
+        startDate: new Date("2026-08-05T19:00:00.000Z"),
+        endDate: new Date("2026-08-06T18:59:59.999Z"),
+      },
+      {
+        branchId: newYorkBranchId,
+        startDate: new Date("2026-08-06T04:00:00.000Z"),
+        endDate: new Date("2026-08-07T03:59:59.999Z"),
+      },
+    ]);
+    jest.useRealTimers();
   });
 });
