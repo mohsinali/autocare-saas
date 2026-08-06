@@ -99,7 +99,21 @@ Service History and Appointments must reference a vehicle and the Branch where t
 
 ### Service History
 
-Represents completed work performed on a vehicle at a Branch.
+Represents one workshop job for one vehicle at a Branch. It remains editable as `DRAFT` while work is recorded, then follows exactly one terminal transition:
+
+```text
+DRAFT
+├── COMPLETED
+└── CANCELLED
+```
+
+There is no `IN_PROGRESS` status, and multiple draft records may exist simultaneously. A completed record is permanent vehicle history and updates `Vehicle.currentMileage` atomically at completion. A draft may be cancelled only when it has no active line items; completed and cancelled records are read-only. A record may optionally originate from an Appointment. Its local visit time is interpreted using its Branch timezone and stored in UTC.
+
+Legacy records created before vehicle ownership was introduced may retain a null `vehicleId` until deliberate operator remediation; all new API writes require a tenant-owned vehicle matching the selected customer.
+
+### Service Line Item
+
+Represents a service, part, labor charge, or other item associated with a Service History. Line items remain editable only while their parent is `DRAFT`, use decimal quantity and monetary values, preserve operator ordering, and will later be the source for Invoice items. Invoice, tax, discount, payment, and inventory behavior is intentionally outside this module.
 
 ### Appointment
 
