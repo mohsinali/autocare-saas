@@ -76,6 +76,34 @@ Appointment query keys are centralized in `src/features/appointments/appointment
 
 Branches are an upstream dependency of Appointments: appointment forms select an active branch through the shared Branch selector and use that branch's IANA timezone and local business hours for scheduling context.
 
+## Service History workspace
+
+```text
+Global:
+Service History
+├── Active Jobs
+├── Completed
+├── Cancelled
+└── Service Record Details
+
+Customer Workspace:
+Customer
+├── Profile
+├── Vehicles
+├── Appointments
+└── Service History
+
+Vehicle Workspace (when a vehicle detail route is introduced):
+Vehicle
+├── Overview
+├── Appointments
+└── Service History
+```
+
+Draft Service History records are presented as Active Jobs. Completed records are permanent Service History, while cancelled records are read-only and never presented as customer charges. Line items are editable only while the parent record is Draft. Completing a record updates vehicle mileage through one backend operation; the frontend never performs a separate mileage mutation. Invoice functionality is intentionally deferred.
+
+Service History date-times are displayed in the related Branch timezone. Global and customer-scoped views reuse the same server-filtered workspace components; vehicle-scoped reuse will follow the same pattern when the application gains a vehicle detail route.
+
 ## Future modules
 
 Vehicles, invoices/billing, reports, notifications, tenant settings/RBAC, audit history, technician management, and AI voice-agent workflows should each be introduced as an independent feature with typed API services, query keys, forms, and route composition. Avoid cross-feature imports except through explicitly shared components or services.

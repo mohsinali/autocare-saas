@@ -25,14 +25,83 @@ export interface PaginatedCustomers {
   limit: number;
   totalPages: number;
 }
+export type ServiceHistoryStatus = "DRAFT" | "COMPLETED" | "CANCELLED";
+export type ServiceLineItemType = "SERVICE" | "PART" | "LABOR" | "OTHER";
+export interface ServiceLineItem {
+  id: string;
+  tenantId: string;
+  serviceHistoryId: string;
+  type: ServiceLineItemType;
+  description: string;
+  quantity: string;
+  unitPrice: string;
+  notes: string | null;
+  sortOrder: number;
+  lineTotal: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
 export interface ServiceHistory {
   id: string;
+  tenantId: string;
+  branchId: string;
   customerId: string;
-  serviceDate: string;
-  description: string;
-  mileage: number | null;
-  totalAmount: string;
+  vehicleId: string | null;
+  appointmentId: string | null;
+  status: ServiceHistoryStatus;
+  visitDate: string;
+  mileageAtService: number | null;
+  customerComplaint: string | null;
+  initialRequest: string;
+  diagnosis: string | null;
+  workSummary: string | null;
+  recommendations: string | null;
+  internalNotes: string | null;
+  cancellationReason: string | null;
+  completedAt: string | null;
+  cancelledAt: string | null;
+  createdBy: string | null;
+  completedBy: string | null;
+  cancelledBy: string | null;
   createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  subtotal: string;
+  branch: Pick<Branch, "id" | "name" | "timezone">;
+  customer: Pick<Customer, "id" | "firstName" | "lastName" | "email" | "phone">;
+  vehicle: Pick<
+    Vehicle,
+    | "id"
+    | "customerId"
+    | "vehicleCode"
+    | "registrationNumber"
+    | "make"
+    | "model"
+    | "year"
+    | "currentMileage"
+  > | null;
+  appointment: Pick<
+    Appointment,
+    "id" | "appointmentDateTimeUtc" | "serviceRequested" | "status"
+  > | null;
+  creator: UserSummary | null;
+  completer: UserSummary | null;
+  canceller: UserSummary | null;
+  lineItems: ServiceLineItem[];
+}
+export interface UserSummary {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+export interface PaginatedServiceHistories {
+  data: ServiceHistory[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 export interface ApiError {
   message: string | string[];

@@ -1,7 +1,7 @@
 "use client";
 import { ArrowLeft, Pencil, Plus } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { EmptyState } from "@/components/common/empty-state";
 import { ErrorState } from "@/components/common/error-state";
@@ -16,6 +16,7 @@ import { CustomerSummaryCard } from "@/features/customers/customer-summary-card"
 import { VehicleDialog } from "@/features/vehicles/vehicle-dialog";
 import { VehicleTable } from "@/features/vehicles/vehicle-table";
 import { useVehicles } from "@/features/vehicles/vehicle-hooks";
+import { ServiceHistoryWorkspace } from "@/features/service-history/components/service-history-workspace";
 import { formatDate } from "@/lib/utils";
 type WorkspaceTab = "profile" | "vehicles" | "appointments" | "service-history";
 const tabs: { id: WorkspaceTab; label: string }[] = [
@@ -27,7 +28,11 @@ const tabs: { id: WorkspaceTab; label: string }[] = [
 export default function CustomerDetailPage(): React.JSX.Element {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const [tab, setTab] = useState<WorkspaceTab>("profile");
+  const searchParams = useSearchParams();
+  const requestedTab = searchParams.get("tab") as WorkspaceTab | null;
+  const [tab, setTab] = useState<WorkspaceTab>(
+    requestedTab === "service-history" ? requestedTab : "profile",
+  );
   const [editCustomer, setEditCustomer] = useState(false);
   const [addVehicle, setAddVehicle] = useState(false);
   const customer = useCustomer(params.id);
@@ -143,11 +148,14 @@ export default function CustomerDetailPage(): React.JSX.Element {
           </CardContent>
         </Card>
       )}
-      {(tab === "appointments" || tab === "service-history") && (
+      {tab === "appointments" && (
         <EmptyState
           title={`${tab === "appointments" ? "Appointments" : "Service history"} coming soon`}
           description="This customer workspace area is being prepared for a future release."
         />
+      )}
+      {tab === "service-history" && (
+        <ServiceHistoryWorkspace lockedCustomerId={current.id} compact />
       )}
       <Dialog open={editCustomer} onOpenChange={setEditCustomer}>
         <DialogContent>
