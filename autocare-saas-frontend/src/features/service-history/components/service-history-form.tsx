@@ -2,6 +2,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { BranchSelect } from "@/components/common/branch-select";
@@ -15,10 +16,12 @@ import { useAppointments } from "@/features/appointments/appointment-hooks";
 import { useBranches } from "@/features/appointments/reference-hooks";
 import { useCustomers } from "@/features/customers/customer-hooks";
 import { useVehicles } from "@/features/vehicles/vehicle-hooks";
+import { useCreateServiceHistory } from "../service-history-hooks";
 import {
-  useCreateServiceHistory,
-  serviceHistoryErrorMessage,
-} from "../service-history-hooks";
+  initialLineItemsForPayload,
+  InitialLineItemCreationError,
+} from "../service-history-create";
+import { serviceHistoryErrorMessage } from "../service-history-error";
 import {
   lineItemSchema,
   serviceHistorySchema,
@@ -36,6 +39,10 @@ export function ServiceHistoryForm({
   const router = useRouter();
   const mutation = useCreateServiceHistory();
   const [includeLineItem, setIncludeLineItem] = useState(false);
+  const [createdDraftId, setCreatedDraftId] = useState<string>();
+  const [lineItemErrors, setLineItemErrors] = useState<
+    Partial<Record<keyof ServiceLineItemInput, string>>
+  >({});
   const [initialLineItem, setInitialLineItem] = useState<ServiceLineItemInput>({
     type: "SERVICE",
     description: "",
@@ -104,12 +111,17 @@ export function ServiceHistoryForm({
         const parsedLineItem = includeLineItem
           ? lineItemSchema.safeParse(initialLineItem)
           : undefined;
-        if (parsedLineItem && !parsedLineItem.success)
-          return form.setError("root", {
-            message:
-              parsedLineItem.error.issues[0]?.message ??
-              "Check the initial line item.",
-          });
+        if (parsedLineItem && !parsedLineItem.success) {
+          const errors: Partial<Record<keyof ServiceLineItemInput, string>> =
+            {};
+          for (const issue of parsedLineItem.error.issues) {
+            const field = issue.path[0] as keyof ServiceLineItemInput;
+            errors[field] ??= issue.message;
+          }
+          setLineItemErrors(errors);
+          return;
+        }
+        setLineItemErrors({});
         mutation.mutate(
           {
             branchId: values.branchId,
@@ -131,16 +143,24 @@ export function ServiceHistoryForm({
             workSummary: values.workSummary || undefined,
             recommendations: values.recommendations || undefined,
             internalNotes: values.internalNotes || undefined,
-            lineItems: parsedLineItem?.success
-              ? [parsedLineItem.data]
-              : undefined,
+            lineItems: initialLineItemsForPayload(
+              includeLineItem,
+              initialLineItem,
+            ),
           },
           {
             onSuccess: (item) => router.push(`/service-history/${item.id}`),
-            onError: (error) =>
-              form.setError("root", {
-                message: serviceHistoryErrorMessage(error),
-              }),
+            onError: (error) => {
+              if (error instanceof InitialLineItemCreationError) {
+                setCreatedDraftId(error.serviceHistory.id);
+                form.setError("root", {
+                  message: `${error.message} ${serviceHistoryErrorMessage(error.cause)}`,
+                });
+              } else
+                form.setError("root", {
+                  message: serviceHistoryErrorMessage(error),
+                });
+            },
           },
         );
       })}
@@ -261,7 +281,19 @@ export function ServiceHistoryForm({
           <input
             type="checkbox"
             checked={includeLineItem}
-            onChange={(event) => setIncludeLineItem(event.target.checked)}
+            onChange={(event) => {
+              const checked = event.target.checked;
+              setIncludeLineItem(checked);
+              setLineItemErrors({});
+              if (!checked)
+                setInitialLineItem({
+                  type: "SERVICE",
+                  description: "",
+                  quantity: "1",
+                  unitPrice: "0.00",
+                  notes: "",
+                });
+            }}
           />
           Add an initial line item
         </label>
@@ -285,7 +317,7 @@ export function ServiceHistoryForm({
                 )}
               </select>
             </Field>
-            <Field label="Description">
+            <Field label="Description" error={lineItemErrors.description}>
               <Input
                 value={initialLineItem.description}
                 onChange={(event) =>
@@ -296,7 +328,7 @@ export function ServiceHistoryForm({
                 }
               />
             </Field>
-            <Field label="Quantity">
+            <Field label="Quantity" error={lineItemErrors.quantity}>
               <Input
                 inputMode="decimal"
                 value={initialLineItem.quantity}
@@ -308,7 +340,7 @@ export function ServiceHistoryForm({
                 }
               />
             </Field>
-            <Field label="Unit price">
+            <Field label="Unit price" error={lineItemErrors.unitPrice}>
               <Input
                 inputMode="decimal"
                 value={initialLineItem.unitPrice}
@@ -328,6 +360,14 @@ export function ServiceHistoryForm({
           {form.formState.errors.root.message}
         </p>
       )}
+      {createdDraftId && (
+        <Link
+          className="inline-flex text-sm font-medium text-blue-600 hover:underline"
+          href={`/service-history/${createdDraftId}`}
+        >
+          Open the created draft and add the line item manually
+        </Link>
+      )}
       <div className="flex justify-end gap-2">
         <Button
           type="button"
@@ -336,7 +376,7 @@ export function ServiceHistoryForm({
         >
           Cancel
         </Button>
-        <Button disabled={mutation.isPending}>
+        <Button disabled={mutation.isPending || Boolean(createdDraftId)}>
           {mutation.isPending && <Loader2 className="size-4 animate-spin" />}
           Create active job
         </Button>

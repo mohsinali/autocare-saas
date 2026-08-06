@@ -68,7 +68,9 @@ export const serviceHistoryService = {
   async get(id: string): Promise<ServiceHistory> {
     return (await api.get<ServiceHistory>(`/service-history/${id}`)).data;
   },
-  async create(input: ServiceHistoryInput): Promise<ServiceHistory> {
+  async create(
+    input: Omit<ServiceHistoryInput, "lineItems">,
+  ): Promise<ServiceHistory> {
     return (await api.post<ServiceHistory>("/service-history", input)).data;
   },
   async update(
