@@ -277,7 +277,7 @@ function InvoiceActions({
           >
             Issue Invoice
           </Button>
-          <Button
+          {/* <Button
             variant="outline"
             disabled={pending}
             onClick={() => {
@@ -290,7 +290,7 @@ function InvoiceActions({
             }}
           >
             Void Invoice
-          </Button>
+          </Button> */}
           <Button
             variant="destructive"
             disabled={pending}
