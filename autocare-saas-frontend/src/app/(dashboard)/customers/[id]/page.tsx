@@ -18,12 +18,15 @@ import { VehicleTable } from "@/features/vehicles/vehicle-table";
 import { useVehicles } from "@/features/vehicles/vehicle-hooks";
 import { ServiceHistoryWorkspace } from "@/features/service-history/components/service-history-workspace";
 import { formatDate } from "@/lib/utils";
-type WorkspaceTab = "profile" | "vehicles" | "appointments" | "service-history";
+import { InvoiceList } from "@/features/invoices/components/invoice-list";
+type WorkspaceTab =
+  "profile" | "vehicles" | "appointments" | "service-history" | "invoices";
 const tabs: { id: WorkspaceTab; label: string }[] = [
   { id: "profile", label: "Profile" },
   { id: "vehicles", label: "Vehicles" },
   { id: "appointments", label: "Appointments" },
   { id: "service-history", label: "Service History" },
+  { id: "invoices", label: "Invoices" },
 ];
 export default function CustomerDetailPage(): React.JSX.Element {
   const params = useParams<{ id: string }>();
@@ -31,7 +34,9 @@ export default function CustomerDetailPage(): React.JSX.Element {
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get("tab") as WorkspaceTab | null;
   const [tab, setTab] = useState<WorkspaceTab>(
-    requestedTab === "service-history" ? requestedTab : "profile",
+    requestedTab === "service-history" || requestedTab === "invoices"
+      ? requestedTab
+      : "profile",
   );
   const [editCustomer, setEditCustomer] = useState(false);
   const [addVehicle, setAddVehicle] = useState(false);
@@ -157,6 +162,7 @@ export default function CustomerDetailPage(): React.JSX.Element {
       {tab === "service-history" && (
         <ServiceHistoryWorkspace lockedCustomerId={current.id} compact />
       )}
+      {tab === "invoices" && <InvoiceList customerId={current.id} compact />}
       <Dialog open={editCustomer} onOpenChange={setEditCustomer}>
         <DialogContent>
           <h2 className="mb-5 text-lg font-semibold">Edit customer profile</h2>

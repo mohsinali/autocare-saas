@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { ErrorState } from "@/components/common/error-state";
 import { LoadingState } from "@/components/common/loading-state";
@@ -46,6 +47,9 @@ import {
   formatServiceHistorySubtotal,
   formatServiceLineItemAmounts,
 } from "../service-history-currency";
+import { useCreateInvoice } from "@/features/invoices/invoice-hooks";
+import { InvoiceStatusBadge } from "@/features/invoices/components/invoice-status-badge";
+import { formatCurrency } from "@/lib/currency";
 
 export function ServiceHistoryDetails({
   id,
@@ -53,6 +57,7 @@ export function ServiceHistoryDetails({
   id: string;
 }): React.JSX.Element {
   const query = useServiceHistory(id);
+  const router = useRouter();
   const currencyCode = useTenantCurrency();
   const [edit, setEdit] = useState(false);
   const [lineItem, setLineItem] = useState<
@@ -233,9 +238,11 @@ export function ServiceHistoryDetails({
               )}
             </dl>
             {item.status === "COMPLETED" && (
-              <div className="mt-6 rounded-lg border border-dashed p-3 text-sm text-slate-500">
-                Invoice creation will be available in a future release.
-              </div>
+              <ServiceInvoice
+                item={item}
+                currencyCode={currencyCode}
+                onOpen={(invoiceId) => router.push(`/invoices/${invoiceId}`)}
+              />
             )}
           </CardContent>
         </Card>
@@ -281,6 +288,65 @@ export function ServiceHistoryDetails({
           <CancelDialog item={item} onDone={() => setCancel(false)} />
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+function ServiceInvoice({
+  item,
+  currencyCode,
+  onOpen,
+}: {
+  item: ServiceHistory;
+  currencyCode: string;
+  onOpen: (id: string) => void;
+}): React.JSX.Element {
+  const create = useCreateInvoice();
+  return (
+    <div className="mt-6 rounded-lg border p-4">
+      <h3 className="font-semibold">Invoice</h3>
+      {item.invoice ? (
+        <div className="mt-3 space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="font-semibold">{item.invoice.invoiceNumber}</p>
+              <p className="text-sm text-slate-500">
+                Total {formatCurrency(item.invoice.totalAmount, currencyCode)}
+              </p>
+            </div>
+            <InvoiceStatusBadge status={item.invoice.status} />
+          </div>
+          <Button
+            className="w-full"
+            variant="outline"
+            onClick={() => onOpen(item.invoice!.id)}
+          >
+            View Invoice
+          </Button>
+        </div>
+      ) : (
+        <div className="mt-2">
+          <p className="text-sm text-slate-500">
+            No invoice has been created for this service.
+          </p>
+          <Button
+            className="mt-3 w-full"
+            disabled={create.isPending}
+            onClick={() => {
+              if (
+                window.confirm(
+                  "Create a draft invoice from this completed service?",
+                )
+              )
+                create.mutate(item.id, {
+                  onSuccess: (invoice) => onOpen(invoice.id),
+                });
+            }}
+          >
+            {create.isPending && <Loader2 className="size-4 animate-spin" />}
+            Create Invoice
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

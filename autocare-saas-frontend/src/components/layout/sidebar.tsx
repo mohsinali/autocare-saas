@@ -22,7 +22,7 @@ const items = [
   { label: "Service History", href: "/service-history", icon: Wrench },
   { label: "Vehicles", href: "#", icon: Car, disabled: true },
   { label: "Appointments", href: "/appointments", icon: CalendarDays },
-  { label: "Invoices", href: "#", icon: FileText, disabled: true },
+  { label: "Invoices", href: "/invoices", icon: FileText },
   { label: "Reports", href: "#", icon: ChartNoAxesCombined, disabled: true },
 ];
 export function Sidebar({

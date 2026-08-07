@@ -89,6 +89,72 @@ export interface ServiceHistory {
   completer: UserSummary | null;
   canceller: UserSummary | null;
   lineItems: ServiceLineItem[];
+  invoice: InvoiceSummary | null;
+}
+
+export type InvoiceStatus = "DRAFT" | "ISSUED" | "PAID" | "VOID";
+export interface InvoiceSummary {
+  id: string;
+  invoiceNumber: string;
+  status: InvoiceStatus;
+  totalAmount: string;
+}
+export interface InvoiceLineItem {
+  id: string;
+  invoiceId: string;
+  serviceLineItemId: string | null;
+  type: ServiceLineItemType | null;
+  description: string;
+  quantity: string;
+  unitPrice: string;
+  taxRate: string;
+  taxAmount: string;
+  lineSubtotal: string;
+  lineTotal: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface Invoice {
+  id: string;
+  tenantId: string;
+  branchId: string;
+  customerId: string;
+  vehicleId: string;
+  serviceHistoryId: string;
+  invoiceNumber: string;
+  status: InvoiceStatus;
+  issueDate: string | null;
+  dueDate: string | null;
+  paidAt: string | null;
+  subtotal: string;
+  discountAmount: string;
+  taxAmount: string;
+  totalAmount: string;
+  taxLabel: string | null;
+  notes: string | null;
+  internalNotes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lineItems: InvoiceLineItem[];
+  customer: Pick<Customer, "id" | "firstName" | "lastName" | "email" | "phone">;
+  vehicle: Pick<
+    Vehicle,
+    "id" | "vehicleCode" | "registrationNumber" | "make" | "model" | "year"
+  >;
+  branch: Pick<Branch, "id" | "name" | "timezone">;
+  serviceHistory: Pick<
+    ServiceHistory,
+    "id" | "status" | "visitDate" | "initialRequest" | "completedAt"
+  >;
+  tenant?: { currencyCode: string };
+}
+export interface PaginatedInvoices {
+  data: Invoice[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 export interface UserSummary {
   id: string;
