@@ -56,6 +56,14 @@ export const serviceHistoryDetailInclude = {
     where: { deletedAt: null },
     orderBy: [{ sortOrder: "asc" as const }, { createdAt: "asc" as const }],
   },
+  invoice: {
+    select: {
+      id: true,
+      invoiceNumber: true,
+      status: true,
+      totalAmount: true,
+    },
+  },
 } satisfies Prisma.ServiceHistoryInclude;
 
 export type ServiceHistoryDetail = Prisma.ServiceHistoryGetPayload<{
