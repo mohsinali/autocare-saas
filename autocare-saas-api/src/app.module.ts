@@ -14,7 +14,7 @@ import { TenantSettingsModule } from './tenant-settings/tenant-settings.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, validationSchema: Joi.object({ NODE_ENV: Joi.string().valid('development', 'test', 'production').default('development'), PORT: Joi.number().port().default(3000), DATABASE_URL: Joi.string().uri({ scheme: ['postgresql', 'postgres'] }).required(), JWT_SECRET: Joi.string().min(32).required(), JWT_EXPIRES_IN: Joi.string().default('15m'), LOG_LEVEL: Joi.string().default('info'), CORS_ORIGIN: Joi.string().optional() }) }),
+    ConfigModule.forRoot({ isGlobal: true, validationSchema: Joi.object({ NODE_ENV: Joi.string().valid('development', 'test', 'production').default('development'), PORT: Joi.number().port().default(3000), DATABASE_URL: Joi.string().uri({ scheme: ['postgresql', 'postgres'] }).required(), JWT_SECRET: Joi.string().min(32).required(), JWT_EXPIRES_IN: Joi.string().default('12h'), LOG_LEVEL: Joi.string().default('info'), CORS_ORIGIN: Joi.string().optional() }) }),
     PrismaModule, TimezoneModule, AuthModule, CustomersModule, VehiclesModule, BranchesModule, ServiceHistoryModule, AppointmentsModule, TenantSettingsModule, InvoicesModule,
   ],
 })
